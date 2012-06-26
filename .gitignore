@@ -1,0 +1,11 @@
+*.agdai
+*.log
+*.out
+*.blg
+*.aux
+*.bbl
+*.fdb_latexmk
+*.ptb
+*.tex
+*.thm
+*.toc
