@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.Context where
 
 open import STLC.Base
@@ -28,4 +29,4 @@ exTm (app y y') = app (exTm y) (exTm y')
 -}
 
 --up' {ε} {Δ} t  = up t
---up' {y , y'} t = wkTm vz {!!}
+--up' {y , y'} t = wkTm vz {!!}\end{code}

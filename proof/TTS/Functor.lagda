@@ -1,3 +1,4 @@
+\begin{code}
 module TTS.Functor where
 
 open import STLC
@@ -130,3 +131,4 @@ dimapcomp (Φ₁ ⟶ Φ₂) f1 f2 g1 g2 =
 --  dimapid : ∀ {τ Γ} → (Φ : Functor) → ⟦ dimap {τ} {τ} {Γ} Φ · id · id ⟧ ≡ ⟦ id ⟧
 --  dimapid Id = refl
 --  dimapid (Φ₁ ⟶ Φ₂) = {!!}
+\end{code}

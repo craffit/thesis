@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.Rename where
 
 open import STLC.Base
@@ -145,3 +146,4 @@ wk-ext-comm : ∀ {Γ Δ τ σ} (x : Var Γ τ) → (y : Var Δ σ) → (t : Tm 
 wk-ext-comm vz y t s = refl
 wk-ext-comm (vs y) y' t (ss y0 y1) = cong (λ z → ss z (wkTm y' y1)) (wk-ext-comm y y' t y0)
 -}
+\end{code}

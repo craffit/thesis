@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.Syntax where
 
 open import STLC.Base
@@ -46,4 +47,4 @@ _⟷_ = btrans
 !up/ t s = %≡ up/ t s
 
 bind : {A : Set} {B : Set} → (a : A) → (A → B) → B
-bind v f = f v
+bind v f = f v\end{code}

@@ -1,3 +1,4 @@
+\begin{code}
 module STLC2 where
 
 infixl 70 _·_
@@ -30,3 +31,4 @@ Val σ = ∀ {V} → Val' V σ
 
 ⟦_⟧ : ∀ {τ} → Tm τ → Val τ
 ⟦ t ⟧ = ⟦ t ⟧'
+\end{code}

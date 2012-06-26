@@ -1,3 +1,4 @@
+\begin{code}
 {-# OPTIONS --universe-polymorphism #-}
 {-# OPTIONS --termination-depth=2 #-}
 module STLC.Core4 where
@@ -227,3 +228,4 @@ module Types where
     con : (α : BaseType) → Type
     _⇒_ : (τ₁ τ₂ : Type) → Type
 
+\end{code}

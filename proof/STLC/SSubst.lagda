@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.SSubst where
 
 
@@ -337,4 +338,4 @@ wkTm-sub-comm y t x u
   _ ≡⟨ cong (λ p → wkTm (rem y x) (! conExc y x >₁ p)) (sym (subst/ x t u)) ⟩
   _ ≡⟨ wkTmSubstExc y t x u ⟩
   _ ≡⟨ subst/ (wkv y x) (wkTm y t) (wkTm (rem y x) (! conExc y x >₁ u)) ⟩
-  _ ∎
+  _ ∎\end{code}

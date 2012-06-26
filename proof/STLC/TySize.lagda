@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.TySize where
 
 open import STLC.Base
@@ -36,3 +37,4 @@ open ≤-Reasoning
 
 τs-neq : ∀ {τ σ} → (τsize τ ≡ τsize σ → ⊥) → τ ≡ σ → ⊥
 τs-neq f p = f (τs-eq p)
+\end{code}

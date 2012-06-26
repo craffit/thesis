@@ -1,3 +1,4 @@
+\begin{code}
 --------------------------------------------------------------------------------
 -- The module implements:                                                     --
 --   - a predicate that defines the βη-equivalence on terms                   --
@@ -422,4 +423,4 @@ subst-up {Γ} t v u =
        subst (wkTm v (up t)) v u
      ≡⟨ weakSubst v (up t) u ⟩
        up t
-     ∎
+     ∎\end{code}

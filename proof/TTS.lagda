@@ -1,3 +1,4 @@
+\begin{code}
 {-# OPTIONS --universe-polymorphism #-}
 -- {-# OPTIONS --injective-type-constructors #-}
 module TTS where
@@ -195,4 +196,4 @@ module TTS (A : Ty) (R : Ty) (rep : ε ⊢ (A ⇒ R)) (abs : ε ⊢ (R ⇒ A)) w
               ⟦ ƛ e1 ⟧ ρ
             ∎
       -- tts-prop : ∀ {φ Φ e e'} {ρ : Env (⟦ φ ⟧Γ A)} → φ ∶ Φ ⊨ e ↝ e' → ⟦ up (dimap Φ · rep · abs) · e' ⟧ (θ φ ρ) ≡ ⟦ e ⟧ ρ
--}
+-}\end{code}

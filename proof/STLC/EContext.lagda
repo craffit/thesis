@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.EContext where
 
 open import STLC.Base
@@ -9,4 +10,4 @@ v1 ▸▸ (y , y') = (v1 ▸▸ y) , y'
 
 
 --up' {ε} {Δ} t  = up t
---up' {y , y'} t = wkTm vz {!!}
+--up' {y , y'} t = wkTm vz {!!}\end{code}

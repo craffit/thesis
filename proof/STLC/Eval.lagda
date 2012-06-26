@@ -1,3 +1,4 @@
+\begin{code}
 {-# OPTIONS --termination-depth=2 #-}
 module STLC.Eval where
 
@@ -227,3 +228,4 @@ evalβη (app y y') =
          t'
        ∎
 
+\end{code}

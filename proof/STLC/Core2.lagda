@@ -1,3 +1,4 @@
+\begin{code}
 {-# OPTIONS --termination-depth=1 #-}
 module STLC.Core2 where
 {-
@@ -233,3 +234,4 @@ sub (ƛ y) x u    = ƛ sub y (vs x) (lf vz u)
 ⟦ e₁ · e₂ ⟧ | e₁'    | e₂'     = e₁' · e₂'
 ⟦ ƛ e     ⟧ = ƛ ⟦ e ⟧
 
+\end{code}

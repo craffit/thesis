@@ -1,3 +1,4 @@
+\begin{code}
 {-# OPTIONS --universe-polymorphism #-}
 module TTS2 where
 
@@ -211,4 +212,4 @@ module TTS (A : Ty) (R : Ty) (rep : ε ⊢ A ⇒ R) (abs : ε ⊢ R ⇒ A) where
               ⟦ ƛ e1 ⟧ ρ
             ∎
       -- tts-prop : ∀ {φ Φ e e'} {ρ : Env (⟦ φ ⟧Γ A)} → φ ∶ Φ ⊨ e ↝ e' → ⟦ up (dimap Φ · rep · abs) · e' ⟧ (θ φ ρ) ≡ ⟦ e ⟧ ρ
--}
+-}\end{code}

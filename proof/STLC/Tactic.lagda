@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.Tactic where
 
 open import STLC.Base
@@ -17,3 +18,4 @@ data _⊢'_ : Con → Ty → Set where
 ⟦ var y ⟧⊢    = var y
 ⟦ Λ y ⟧⊢      = Λ ⟦ y ⟧⊢
 ⟦ app y y' ⟧⊢ = app ⟦ y ⟧⊢ ⟦ y' ⟧⊢
+\end{code}

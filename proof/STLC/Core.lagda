@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.Core where
 {-
 -- Types
@@ -149,3 +150,4 @@ shrink {y ▸ y'} {τ} (y0 ▸ y1) = shrink y0 ▸ y1
 ⟦ e₁ · e₂ ⟧  ρ        = ⟦ e₁ ⟧ ρ (⟦ e₂ ⟧ ρ)
 ⟦ ƛ e     ⟧ ρ        = λ x → ⟦ e ⟧ (ρ ► x)
 
+\end{code}

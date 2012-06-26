@@ -1,3 +1,4 @@
+\begin{code}
 module STLC.Prelude where
 
 open import STLC.Base
@@ -64,3 +65,4 @@ id-comp f =
      ⟷⟨ β≡ brefl ⟩
      _ ∎
 
+\end{code}

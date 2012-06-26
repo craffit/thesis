@@ -1,3 +1,4 @@
+\begin{code}
 module STLC3 where
 
 open import Data.Unit
@@ -56,3 +57,4 @@ lookup (vs x) (ρ ▸ v) = lookup x ρ
 ⟦ e₁ · e₂ ⟧ ρ = ⟦ e₁ ⟧ ρ (⟦ e₂ ⟧ ρ)
 ⟦ ƛ e     ⟧ ρ = λ x → ⟦ e ⟧ (ρ ▸ x)
 
+\end{code}

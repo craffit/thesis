@@ -1,3 +1,4 @@
+\begin{code}
 --------------------------------------------------------------------------------
 -- This module implements hereditary substitutions for the simply-typed       --
 -- λ-calculus.                                                                --
@@ -215,4 +216,4 @@ mutual
 {-
 ⟦ comb tm ⟧ with ⟦ tm ⟧
 ⟦ comb tm ⟧ | comb tm' = comb tm'
-⟦ comb tm ⟧ | tm'      = comb tm'-}
+⟦ comb tm ⟧ | tm'      = comb tm'-}\end{code}
