@@ -252,3 +252,45 @@
 %format bet = "\beta"
 %format bet' = bet prime
 
+\DeclareUnicodeCharacter{2237}{\ensuremath{\dblcolon}}
+%% \DeclareUnicodeCharacter{120036}{\mathcal{U}}            %%% 퓤
+%% \DeclareUnicodeCharacter{8715}{$\ni$}                    %%% ∋
+\DeclareUnicodeCharacter{9675}{$\circ$}              %%% ○
+\DeclareUnicodeCharacter{9659}{$\triangleright$}            %%% ▻
+\DeclareUnicodeCharacter{7580}{${}^{\Varid{c}}$}            %%% ᶝ
+\DeclareUnicodeCharacter{7496}{${}^{\Varid{d}}$}            %%% ᵈ
+\DeclareUnicodeCharacter{7584}{${}^{\Varid{f}}$}            %%% ᶠ
+\DeclareUnicodeCharacter{10218}{$\langle!\langle$}          %%% ⟪
+\DeclareUnicodeCharacter{10219}{$\rangle!\rangle$}          %%% ⟫
+\DeclareUnicodeCharacter{10239}{$\rightsquigarrow$}         %%% ⟿
+\DeclareUnicodeCharacter{8788}{$\coloneq$}                  %%% ≔
+\DeclareUnicodeCharacter{8336}{${}_{\Varid{a}}$}            %%% ₐ
+\DeclareUnicodeCharacter{8339}{${}_{\Varid{x}}$}            %%% ₓ
+\DeclareUnicodeCharacter{7524}{${}_{\Varid{u}}$}            %%% ᵤ
+\DeclareUnicodeCharacter{7525}{${}_{\Varid{v}}$}            %%% ᵥ
+\DeclareUnicodeCharacter{9655}{$\triangleright$}            %%% ▷
+\DeclareUnicodeCharacter{411}{$\lambdabar$}                 %%% ƛ
+\DeclareUnicodeCharacter{8608}{$\twoheadrightarrow$}        %%% ↠
+\DeclareUnicodeCharacter{10230}{$\longrightarrow$}          %%% ⟶ 
+\DeclareUnicodeCharacter{9670}{$\blackdiamond$}  %%% ◆
+ 
+\newcommand{\textSigma}{{$\Sigma$}}
+\newcommand{\textsigma}{{$\sigma$}}
+\newcommand{\textalpha}{{$\alpha$}}
+\newcommand{\textdelta}{{$\delta$}}
+\renewcommand{\textbeta}{{$\beta$}}
+\newcommand{\textgamma}{{$\gamma$}}
+\newcommand{\textGamma}{{$\Gamma$}}
+\newcommand{\textDelta}{{$\Delta$}}
+\newcommand{\textLambda}{{$\Lambda$}}
+\newcommand{\texteta}{{$\eta$}}
+\newcommand{\textlambda}{{$\lambda$}}
+\newcommand{\textpi}{{$\pi$}}
+\newcommand{\textchi}{{$\chi$}}
+\renewcommand{\textmu}{{$\mu$}}
+\newcommand{\textrho}{{$\rho$}}
+\newcommand{\texttau}{{$\tau$}}
+\newcommand{\A}{\ensuremath{\mathbb{A}}}
+\newcommand{\textPhi}{{$\Phi$}}
+\newcommand{\textPsi}{{$\Psi$}}
+\newcommand{\textEpsilon}{{$E$}}

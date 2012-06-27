@@ -1,5 +1,7 @@
 \section{Motivating Examples}
 
+%include ../formatting/haskell.fmt
+
 \subsection{Hughes' lists}
 One example of a type-changing program transformation is known as Hughes' lists ~\cite{hughes86}. In his work, Hughes presents a method which reduces the computational overhead induced by the naive implementation of list concatenation. To see how this works, first consider the following implementation of list concatenation:
 
@@ -23,7 +25,7 @@ The Hughes' list transformation solves this by treating lists not as normal list
 > type HughesList a = [a] -> [a]
 >
 > rep :: [a] -> HughesList a
-> rep l = (l ++)
+> rep ls = (ls ++)
 > 
 > abs :: HughesList a -> [a]
 > abs c = c []
@@ -39,15 +41,132 @@ The speedup comes from the fact that, instead of normal concatenation, we can us
 All examples now have the same, optimal running time because the continuation technique avoids building intermediate results: each list is only traversed at most once. Additionally, where the speed of normal concatenation depends on the size of its first argument, function composition has a constant running time.
 
 \subsection{Stream fusion}
-Another example of a type-changing program transformation is stream fusion.
+Another example of a type-changing program transformation is stream fusion, as found in Coutts et al.~\cite{coutts07, coutts07b}. The goal of stream fusion is the same as Hughes' lists: optimizing operations on lists. Stream fusion does this using a technique called deforestation, which reduces the number of intermediate results constructed when doing operations on lists. Consider the following example:
 
-\subsection{General pattern}
-Looking closely at the previous two examples, we can see a transformation pattern emerge. In both cases a single type is changed into another, better optimized type. All functions on the original type are replaced by functions on the optimized type, while maintaining the same semantic behaviour. The functions |rep| and |abs| are used to perform conversions between both types.
+> map f `comp` filter c `comp` map g
+
+When this example is compiled without optimization, an intermediate result will be constructed at the position of each composition. Modern compilers such as GHC can partly optimize this kind of overhead away, but not for all cases. A better solution is to use streams instead of lists. Streams are defined as follows:
+
+> data Step s a =
+>     Done
+>  |  Yield a s
+>  |  Skip s
+> 
+> data Stream a = some s. Stream { step :: s -> Step s a, seed :: s }
+
+Streams do not represent lists directly but store a seed and a function which can be used to obtain a new item from the list and a modified seed (|Yield|). When the list is empty |Done| will be returned and |Skip| will just modify the seed. This becomes more clear when we look at the function which converts a stream into a list:
+
+> abs :: Stream a -> [a]
+> abs stream = extract $ seed stream
+>   where
+>     extract seed' =
+>        case step stream seed' of
+>          Done             -> []
+>          Skip    newseed  -> extract newseed
+>          Yield x newseed  -> x : extract newseed
+
+In a similar fashion we can construct a stream from a list:
+
+> rep :: [a] -> Stream a
+> rep ls = Stream next ls
+>   where
+>     next []     = Done
+>     next (x:xs) = Yield x xs
+
+Here the list becomes the seed and the step function produces an item from the list at each step.
+
+
+We first have to show that |toStream| and |fromStream| form a retraction pair. We show
+this by induction on the list argument.
+
+Empty list:
+
+> fromStream (toStream [])
+>== { Definition toStream }
+> fromStream (Stream next [])
+>== { Definition fromStream }
+> extract []
+>== { Definition extract and next }
+> []
+
+Cons case:
+
+> fromStream (toStream (x : xs))
+>== { Definition toStream }
+> fromStream (Stream next (x : xs))
+>== { Definition fromStream }
+> extract (x : xs)
+>== { Definition extract and next }
+> x : extract xs
+>== { Defintition fromStream }
+> x : fromStream (Stream next xs)
+>== { Defintion toStream }
+> x : fromStrean (toStream xs)
+>== { Induction hypothesis }
+> x : xs
+
+We can now define the retraction for the transformation system:
+
+> A a = [a]
+> R a = Stream a
+> rep = toStream
+> abs = fromStream
+
+We need both the polymorphism and the parametrized types to make this example work. Not that this
+system also support nested application of transformation, so a term of type |[[Int]]| could be
+transformed to the type |Stream (Stream Int)|.
+
+The actual optimization in this transformation comes from the rewriting of functions which make
+use of the optimized stream structure. We give an example of map here with the proof:
+
+> map :: (a -> b) -> [a] -> [b]
+> map f [] = []
+> map f (x : xs) = f x : map f xs
+>
+> mapS :: (a -> b) -> Stream a -> Stream b
+> mapS f (Stream next seed) = Stream next' seed
+>     next' s =
+>       case next s of
+>           Done       -> Done
+>           Skip s'    -> Skip s'
+>           Yield a s' -> Yield (f a) s'
+
+From this we can make the following transformation rule:
+
+> F = (a -> b) -> Id a -> Id b
+> map `rw` mapS : F
+
+However, we first have to show that |mapS| is a proper implementation for |map|, by showing:
+
+> dimap_F rep abs mapS f x == map f x
+
+> dimap_F toStream fromStream mapS f x
+>== { Definition dimap_F }
+> ((dimap(Id a -> Id b)) rep abs `comp` mapS `comp` (dimap(a -> b)) abs rep) f x
+>== { Evaluation }
+> ((dimap(Id a -> Id b)) rep abs $ mapS $ (dimap(a -> b)) abs rep f) x
+>== { Definition (dimap(Id a -> Id b)) }
+> ((dimap(Id b)) rep abs `comp` (mapS $ (dimap(a -> b)) abs rep f) `comp` (dimap(Id a)) abs rep) x
+>== { Evaluation }
+> (dimap(Id b)) rep abs $ (mapS $ (dimap(a -> b)) abs rep f) $ (dimap(Id a)) abs rep x
+>== { Defintition dimap }
+> (dimap([b])) rep abs $ abs $ (mapS $ (dimap(a -> b)) abs rep f) $ (dimap(Stream a)) abs rep $ rep x
+
+We now proof by induction on x
+
+
 \section{Type and Transform Systems}
 
-\subsection{STLC}
+Looking closely at the previous two examples, we can see a transformation pattern emerge. In both examples a single type is changed into another, better optimized type. All functions on the original type are replaced by functions on the optimized type, while maintaining the same semantic behaviour. The functions |rep| and |abs| are used to perform conversions between both types.
 
-\subsection{An STLC-based transformation system}
+Type and transform systems are a formalization of this transformation pattern. 
+
+
+\subsection{Object Language}
+
+\subsection{Typing functor}
+
+\section{An STLC-based transformation system}
 A type and transform system (TTS) transforms a program which, when the transformation
 is successful, guarantees the following TTS properties:
 
@@ -56,8 +175,7 @@ is successful, guarantees the following TTS properties:
   \item The source and result program are semantically equivalent
 \end{itemize}
 
-At the heart of a TTS is the TTS relation. The TTS relation specifies which well-typed 
-source programs can be turned into a well-typed result program, as such:
+At the heart of a TTS is the TTS relation. The TTS relation specifies which well-typed source programs can be turned into a well-typed result program, as such:
 
 > e : ty `rw` e' : ty'
 
@@ -150,6 +268,8 @@ which is of the correct type. The |Final| rule in Figure~\ref{fig:stlcfinal} fin
 that both terms are semantically equal. This is only the case when there are no free variables and the type of the source
 and target terms are equal.
 
+%include ../formatting/rules.fmt
+
 \begin{figure}[t]
 \begin{align*}
 &|Id|
@@ -208,5 +328,13 @@ The next step is to turn these typing rules into an algorithm which will actuall
 transformation. This will be done in the next section. We would also like to see proof 
 that these rules only allow semantics preserving transformations. The proof of this can be found in appendix A.
 
+\section{A TTS for Hughes' lists}
+With the basic STLC TTS system in place, we can now define TTS system for Hughes' list transformation.
+
+
+ 
 \subsection{Example}
 %include example.lhs
+
+\section{A TTS for Stream fusion}
+

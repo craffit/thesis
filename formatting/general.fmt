@@ -1,0 +1,5 @@
+%format rep = "\textbf{rep}"
+%format abs = "\textbf{abs}"
+
+%format tyA = "\mathfrak{A}"
+%format tyR = "\mathfrak{R}"

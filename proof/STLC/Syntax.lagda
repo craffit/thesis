@@ -47,4 +47,6 @@ _⟷_ = btrans
 !up/ t s = %≡ up/ t s
 
 bind : {A : Set} {B : Set} → (a : A) → (A → B) → B
-bind v f = f v\end{code}
+bind v f = f v 
+
+\end{code}

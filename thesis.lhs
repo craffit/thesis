@@ -9,11 +9,16 @@
 %include thesis.fmt
 %include colorcode.fmt
 
+%include formatting/general.fmt
+
 %-------------------------------------------------------------------------------
 
 % For natural deduction
 \usepackage{bussproofs}
 \usepackage{rotating}
+
+% For encoding
+\usepackage[utf8x]{inputenc}
 
 \usepackage{amsmath}
 % Use this arrow from amsmath before it is replaced by another package.
@@ -49,25 +54,26 @@
 \tableofcontents
 
 \chapter{Introduction}
-%include introduction.lhs
+%include chapters/introduction.lhs
 
 \chapter{TTS System}
-%include tts.lhs
+%include chapters/tts.lhs
 
 \chapter{Tools of the Trade}
-%include tools.lhs
+%include chapters/tools.lhs
 
 \chapter{Proof}
-%include proof.lhs
+%include chapters/proof.lhs
 
 \chapter{Mechanical Proof}
-%include proof.lagda
+%include chapters/mechanical.lagda
 
 \chapter{Conclusion}
-%include conclusion.lhs
+%include chapters/conclusion.lhs
 
 %-------------------------------------------------------------------------------
-\bibliographystyle{abbrvnat}
+\nocite{*}
+\bibliographystyle{alpha}
 \bibliography{thesis}
 
 \end{document}

@@ -1,5 +1,3 @@
-\section{Equational Reasoning}
-
 \section{Functors}
 A functor can be seen as a function on types. It takes as parameter a type and yields a 
 new type based on its argument. Associated with a type level functor is a term level functor which 
@@ -50,3 +48,6 @@ using the following type-indexed function:
 > dimap_F1F2  rep abs f = dimap_F2 rep abs `comp` f `comp` dimap_F1 abs rep
 
 \section{Retractions}
+
+\section{Equational Reasoning}
+

@@ -1,0 +1,1 @@
+%format (hole(x)) = "\mathring{" x "}"

@@ -1,4 +1,6 @@
-%include proof.fmt
+%include ../formatting/haskell.fmt
+\section{Hoi}
+
 
 \subsection{Inference rule properties}
 What is left is to proof that the property is preserved by all derivation rules. Of course, this assumes that

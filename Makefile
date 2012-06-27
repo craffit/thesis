@@ -8,7 +8,7 @@
 .PHONY : thesis.pdf thesis.tex default thesis
 
 thesis : 
-	lhs2TeX --poly thesis.lhs > thesis.tex
+	lhs2TeX --agda thesis.lhs > thesis.tex
 	latexmk -pdf thesis.tex
 
 TARGET := thesis
