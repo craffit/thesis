@@ -4,35 +4,61 @@
 
 module STLC.Base where
 
+infixr 6 _⇒_
+infixl 5 _,_
+infix 4 _∋_
+
+infix 2 _⊢_
+infixl 10 _·_
+
+infixl 5 _-_
 \end{code}
 %endif
 
+Fundamental to a mechanical formalization of the TTS system is the representation of the object language, STLC. STLC can be represented in multiple ways, as described in~\cite{keuchel11}. The representation chosen here is a first-order representation using well-typed de Bruijn indices as found in Keller and Altenkirch~\cite{keller10}. A first-order formulation is mandatory because it allows us to inspect and reason about terms and types in the object language. Formulating using well-typed de Buijn indices is useful because it asserts important properties about the terms by construction.
+
+\paragraph{de Bruijn indices} Well-typed de Bruijn indices is a way to represent variables in languages based on the lambda calculus. Instead of naming a variable, a variable is given an index which denotes at which lambda the variable is bound. More precisely, the index denotes the number of lambdas that occur between the variable and its binding site. Well-typed de Bruijn are almost the same but each variable now also has an assigned type. When a term contains free variables, a context is used to assign each free variable a type and a binding place. Types and contexts are defined in the following way:
+
 \begin{code}
 
-infixr 6 _⇒_
-
 data Ty : Set where
-  ○ : Ty
-  _⇒_ : Ty → Ty → Ty
-
-infixl 5 _,_
+  ○    : Ty
+  _⇒_  : Ty → Ty → Ty
 
 data Con : Set where
-  ε : Con
-  _,_ : Con → Ty → Con
-
-infix 4 _∋_
-
-data _∋_ : Con → Ty → Set where
-  vz : ∀ {Γ σ} → Γ , σ ∋ σ
-  vs : ∀ {τ Γ σ} → Γ ∋ σ → Γ , τ ∋ σ
+  ε    : Con
+  _,_  : Con → Ty → Con
 
 \end{code}
 
+Because variables are nameless in the de Bruijn representation, each item in the type context |Con| represents a consecutive binding site for free variables and the type that is associated with it. Variable indices are defined as indices into this surrounding context.
+
 \begin{code}
 
--- Removing a variable from a context
-infixl 5 _-_
+data _∋_ : Con → Ty → Set where
+  vz : ∀ {Γ σ}    → Γ , σ ∋ σ
+  vs : ∀ {τ Γ σ}  → Γ ∋ σ → Γ , τ ∋ σ
+
+\end{code}
+
+Using these constructions we can construct a representation for the lambda calculus.
+ 
+\begin{code}
+
+data _⊢_ : Con → Ty → Set where
+  var  : ∀ {Γ σ}    → Γ ∋ σ → Γ ⊢ σ
+  Λ    : ∀ {Γ σ τ}  → Γ , σ ⊢ τ → Γ ⊢ σ ⇒ τ
+  _·_  : ∀ {Γ σ τ}  → Γ ⊢ σ ⇒ τ → Γ ⊢ σ → Γ ⊢ τ
+
+\end{code}
+
+As said, terms are indexed by a context representing the free variables it may contain, along with the resulting type of the term itself. A variable is represented by a index into the context and produces a term with the type of that variable. A lambda binding binds a free variable by removing it from the context and introducing a function space.
+
+\paragraph{Benefits of well-types de Bruijn indices} This formulation of the lambda calculus using well-typed de Bruijn indices has some very nice properties. First of all, terms are type-correct by construction: it is impossible to construct a type incorrect term. Another advantage is that free variables are dealt with in a graceful way. All free variables appear in the context. If the context is empty no free variables exist.
+
+\paragraph{Manipulating terms} Variables and terms are built with respect to a certain context. Sometimes we want to change the context by which a term is indexed. To be able express this, we first construct a function which removes a variable from a context:
+
+\begin{code}
 
 _-_ : {σ : Ty} → (Γ : Con) → Γ ∋ σ → Con
 ε       - ()
@@ -41,15 +67,25 @@ _-_ : {σ : Ty} → (Γ : Con) → Γ ∋ σ → Con
 
 \end{code}
 
+Using this function, we can define functions which extend the context in which a term or variable exists. This creates room for one extra free variable.
+
+\begin{code}
+wkv : ∀ {Γ σ τ} → (x : Γ ∋ σ) → Γ - x ∋ τ → Γ ∋ τ
+wkv vz     y       = vs y
+wkv (vs x) vz      = vz
+wkv (vs x) (vs y)  = vs (wkv x y)
+
+wkTm : ∀ {σ Γ τ} → (x : Γ ∋ σ) → Γ - x ⊢ τ → Γ ⊢ τ
+wkTm x (var v)    = var (wkv x v)
+wkTm x (Λ t)      = Λ (wkTm (vs x) t)
+wkTm x (t₁ · t₂)  = wkTm x t₁ · wkTm x t₂
+
+weaken : ∀ {Γ τ σ} → Γ ⊢ τ → Γ , σ ⊢ τ
+weaken t = wkTm vz t
+\end{code}
+
 %if False
 \begin{code}
--- Conversely, adding a variable to a context (weakening)
-
-wkv : ∀ {Γ σ τ} → (x : Γ ∋ σ) → Γ - x ∋ τ → Γ ∋ τ
-wkv vz     y      = vs y
-wkv (vs x) vz     = vz
-wkv (vs x) (vs y) = vs (wkv x y)
-
 
 -- The equality between variables: the predicate...
 
@@ -67,35 +103,6 @@ eq (vs x)  vz     = diff (vs x) vz
 eq (vs x)  (vs y) with eq x y
 eq (vs x)  (vs .x)         | same       = same
 eq (vs .x) (vs .(wkv x y)) | (diff x y) = diff (vs x) (vs y)
-\end{code}
-%endif
-
-\begin{code}
-
-infix 2 _⊢_
-infixl 10 _·_
-
-data _⊢_ : Con → Ty → Set where
-  var : ∀ {Γ σ} → Γ ∋ σ → Γ ⊢ σ
-  Λ   : ∀ {Γ σ τ} → Γ , σ ⊢ τ → Γ ⊢ σ ⇒ τ
-  _·_ : ∀ {Γ σ τ} → Γ ⊢ σ ⇒ τ → Γ ⊢ σ → Γ ⊢ τ
-
-\end{code}
-
-\begin{code}
-
-wkTm : ∀ {σ Γ τ} → (x : Γ ∋ σ) → Γ - x ⊢ τ → Γ ⊢ τ
-wkTm x (var v) = var (wkv x v)
-wkTm x (Λ t) = Λ (wkTm (vs x) t)
-wkTm x (t₁ · t₂) = wkTm x t₁ · wkTm x t₂
-
-weaken : ∀ {Γ τ σ} → Γ ⊢ τ → Γ , σ ⊢ τ
-weaken t = wkTm vz t
-
-\end{code}
-
-%if False
-\begin{code}
 
 -- Substitutions for variables and terms
 
@@ -179,8 +186,8 @@ substDiff3 (vs x) (vs y) = substDiff2 x y (substDiff3 x y)
 !Λ refl _ = refl
 
 
-!_·_ : ∀ {Γ Δ σ τ} → (p : Γ ≡ Δ) → (t₁ : _⊢_ Γ (σ ⇒ τ)) → (t₂ : _⊢_ Γ σ) → ! p >₁ _·_ t₁ t₂ ≡ _·_ (! p >₁ t₁) (! p >₁ t₂)
-!_·_ refl _ _ = refl
+!· : ∀ {Γ Δ σ τ} → (p : Γ ≡ Δ) → (t₁ : _⊢_ Γ (σ ⇒ τ)) → (t₂ : _⊢_ Γ σ) → ! p >₁ _·_ t₁ t₂ ≡ _·_ (! p >₁ t₁) (! p >₁ t₂)
+!· refl _ _ = refl
 
 
 -- Commutation between wkTm and !_>₁_
@@ -188,6 +195,13 @@ substDiff3 (vs x) (vs y) = substDiff2 x y (substDiff3 x y)
 !wkTm : ∀ {Γ Δ σ τ} → (p : Γ ≡ Δ) → (u : _⊢_ Γ τ) → ! cong (λ Θ → Θ , σ) p >₁ wkTm vz u ≡ wkTm vz (! p >₁ u)
 !wkTm refl _ = refl
 
+mkVar : ∀ {Γ Δ σ} → (p : Γ ≡ Δ) → (v : Γ ∋ σ) → Γ - v ≡ Δ - (! p >₀ v)
+mkVar refl vz = refl
+mkVar refl (vs y) = refl
+
+!wkTm' : ∀ {Γ Δ σ τ} → (v : Γ ∋ σ) → (p : Γ ≡ Δ) → (u : Γ - v ⊢ τ) → ! p >₁ wkTm v u ≡ wkTm (! p >₀ v) (! mkVar p v >₁ u)
+!wkTm' vz refl u = refl
+!wkTm' (vs y) refl u = refl
 
 -- Changing term inside !_>₁_
 
@@ -268,7 +282,7 @@ wkTmExc x y (Λ t) = begin
   _ ≡⟨ cong Λ (wkTmExc (vs x) (vs y) t) ⟩
   _ ∎
 wkTmExc x y (_·_ t₁ t₂) = begin
-  _ ≡⟨ cong (λ t → wkTm (wkv x y) (wkTm (rem x y) t)) (!_·_ (conExc x y) t₁ t₂) ⟩
+  _ ≡⟨ cong (λ t → wkTm (wkv x y) (wkTm (rem x y) t)) (!· (conExc x y) t₁ t₂) ⟩
   _ ≡⟨ cong₂ _·_ (wkTmExc x y t₁) (wkTmExc x y t₂) ⟩
   _ ∎
 
@@ -302,7 +316,7 @@ wkTmSubstExc y (Λ t) x u = begin
   _ ≡⟨ cong (λ n → Λ (subst (wkTm (vs y) t) (vs (wkv y x)) n)) (wkTmExc vz (rem y x) (! conExc y x >₁ u)) ⟩
   _ ∎
 wkTmSubstExc y (_·_ t₁ t₂) x u = begin
-  _ ≡⟨ cong (wkTm (rem y x)) (!_·_ (conExc y x) (subst t₁ x u) (subst t₂ x u)) ⟩
+  _ ≡⟨ cong (wkTm (rem y x)) (!· (conExc y x) (subst t₁ x u) (subst t₂ x u)) ⟩
   _ ≡⟨ cong₂ _·_ (wkTmSubstExc y t₁ x u) (wkTmSubstExc y t₂ x u) ⟩
   _ ∎
 
@@ -374,7 +388,7 @@ substComm {σ ⇒ _} (Λ t) x u₁ y u₂ = begin
   _ ≡⟨ cong (λ u → Λ (subst (subst t (vs (wkv x y)) (wkTm vz (wkTm (rem x y) (! conExc x y >₁ u₂)))) (vs (rem x y)) u)) (!wkTm (conExc x y) (subst u₁ y u₂)) ⟩
   _ ∎
 substComm (_·_ t₁ t₂) x u₁ y u₂ = begin
-  _ ≡⟨ !_·_ (conExc x y) (subst (subst t₁ x u₁) y u₂) (subst (subst t₂ x u₁) y u₂) ⟩
+  _ ≡⟨ !· (conExc x y) (subst (subst t₁ x u₁) y u₂) (subst (subst t₂ x u₁) y u₂) ⟩
   _ ≡⟨ cong₂ _·_ (substComm t₁ x u₁ y u₂) (substComm t₂ x u₁ y u₂) ⟩
   _ ∎
 

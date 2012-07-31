@@ -8,16 +8,25 @@ open import STLC.Base
 
 open import Relation.Binary.PropositionalEquality renaming (subst to ≡subst)
 open ≡-Reasoning
+
+infix 3 _=>_                                                                                              
+infix 8 _/_
+infix 8 _/=>_
 \end{code}
 %endif
 
+\paragraph{Simultaneous substitution}
+Keller and Altenkirch also give an implementation of single substitution. For our purpose we also require simultaneous substitution. Simultaneous substitution is a substitution technique in which all free variables in a term are replaced, at once, with terms belonging to an entirely new context. We define such a substitution as follows:
+
 \begin{code}
-infix 3 _=>_
 
 data _=>_ : Con → Con → Set where
-  sz : ∀ {Δ} → ε => Δ
-  ss : ∀ {Γ Δ τ} → Γ => Δ → Δ ⊢ τ → Γ , τ => Δ
+  sz : ∀ {Δ}      → ε => Δ
+  ss : ∀ {Γ Δ τ}  → Γ => Δ → Δ ⊢ τ → Γ , τ => Δ
+
 \end{code}
+
+The substitution type is indexed by two type contexts. The first type context represents the free variables that will be replaced and the second type context represents the new type context after substitution.
 
 %if False
 \begin{code}
@@ -40,13 +49,23 @@ data _=>_ : Con → Con → Set where
 \end{code}
 %endif
 
+Before defining the function which will perform the actual substitution on terms, we need some auxiliary functions to manipulate substitutions.
 \begin{code}
 
 wkS : ∀ {Γ Δ τ} → (x : Δ ∋ τ) → Γ => Δ - x → Γ => Δ
-wkS v sz        = sz
-wkS v (ss y y') = ss (wkS v y) (wkTm v y')
+wkS v sz         = sz
+wkS v (ss y y')  = ss (wkS v y) (wkTm v y')
 
+extS : ∀ {Γ Δ τ} → (x : Γ ∋ τ) → (t : Δ ⊢ τ) → Γ - x => Δ → Γ => Δ
+extS vz t s               = ss s t
+extS (vs y) t (ss y' y0)  = ss (extS y t y') y0
+
+wkExtS : {Γ Δ : Con} {τ : Ty} → (x : Γ ∋ τ) → (y : Δ ∋ τ) 
+      → Γ - x => Δ - y → Γ => Δ
+wkExtS x y v = extS x (var y) (wkS y v)
 \end{code}
+
+The |wkS| function weakens the result context of a substitution, the |extS| function extends a substitution such that it replaces an extra free variable with a term. |wkExtS| is defined for convenience to create a 'gap' in a substitution. This function adds a new free variable to a substitution which will be replaced a unique other variable.
 
 %if False
 \begin{code}
@@ -63,19 +82,6 @@ wkSExc x y (ss y' y0) = begin
        _ ≡⟨ cong₂ ss (wkSExc x y y') (wkTmExc x y y0) ⟩
        _ ∎
 
-\end{code}
-%endif
-
-\begin{code}
-
-extS : ∀ {Γ Δ τ} → (x : Γ ∋ τ) → (t : Δ ⊢ τ) → Γ - x => Δ → Γ => Δ
-extS vz t s              = ss s t
-extS (vs y) t (ss y' y0) = ss (extS y t y') y0
-
-\end{code}
-
-%if False
-\begin{code}
 extSExc : forall {Γ Δ σ τ} -> (x : Γ ∋ σ) -> (y : _∋_ (Γ - x) τ)
       -> (t : _⊢_ Δ σ) → (u : _⊢_ Δ τ)
       -> (s : ((Γ - x) - y) => Δ)
@@ -94,14 +100,11 @@ wk-ext-comm : ∀ {Γ Δ τ σ} (x : _∋_ Γ τ) → (y : _∋_ Δ σ) → (t :
 wk-ext-comm vz y t s = refl
 wk-ext-comm (vs y) y' t (ss y0 y1) = cong (λ z → ss z (wkTm y' y1)) (wk-ext-comm y y' t y0)
 
-wkSI : {Γ Δ : Con} {τ : Ty} → (x : _∋_ Γ τ) → (y : _∋_ Δ τ) → Γ - x => Δ - y → Γ => Δ
-wkSI x y v = extS x (var y) (wkS y v)
-
-wkSI-extS : forall {Γ Δ σ τ} -> (x : _∋_ Γ σ) -> (y : _∋_ (Γ - x) τ)
+wkExtS-extS : forall {Γ Δ σ τ} -> (x : _∋_ Γ σ) -> (y : _∋_ (Γ - x) τ)
       -> (a : _∋_ Δ σ) → (u : _⊢_ (Δ - a) τ)
       -> (s : ((Γ - x) - y) => Δ - a)
-      -> extS (wkv x y) (wkTm a u) (wkSI (rem x y) a (! conExc x y >₃ s)) ≡ wkSI x a (extS y u s)
-wkSI-extS x y a u s 
+      -> extS (wkv x y) (wkTm a u) (wkExtS (rem x y) a (! conExc x y >₃ s)) ≡ wkExtS x a (extS y u s)
+wkExtS-extS x y a u s 
   = begin
   _ ≡⟨ cong (λ p → extS (wkv x y) (wkTm a u) (extS (rem x y) (var a) p)) (sym (!wkS (conExc x y) a s)) ⟩
   _ ≡⟨ extSExc x y (var a) (wkTm a u) (wkS a s) ⟩
@@ -109,24 +112,55 @@ wkSI-extS x y a u s
   _ ∎
 
 ιss : ∀ {Γ τ} → Γ => Γ → Γ , τ => Γ , τ
-ιss = wkSI vz vz
+ιss = wkExtS vz vz
+
+\end{code}
+%endif
+
+The substitution function |_/_| can now be defined in the following way, with use of helper function lookup. |lookup| retrieves the term at some variable index from a substitution.
+
+\begin{code}
+lookup : ∀ {Γ Δ τ} → (v : Γ ∋ τ) → Γ => Δ → Δ ⊢ τ
+lookup vz (ss y y')       = y'
+lookup (vs y) (ss y' y0)  = lookup y y'
+
+_/_ : ∀ {Γ Δ τ} → Γ ⊢ τ → Γ => Δ → Δ ⊢ τ
+_/_ (var y)   s = lookup y s
+_/_ (Λ y)     s = Λ (y / wkExtS vz vz s)
+_/_ (y · y')  s = (y / s) · (y' / s)
+
+_/=>_ : ∀ {Γ Δ Δ'} → Γ => Δ → Δ => Δ' → Γ => Δ'
+sz       /=> s' = sz
+ss y y'  /=> s' = ss (y /=> s') (y' / s')
+\end{code}
+
+Using |lookup| the variable case becomes simple to implement. The interesting case is applying substitutions over lambda abstractions. Lambda abstraction binds a variable from the free variable context of its subterm. In order to be able to apply the given substitution to this subterm, we extend the given substitution with an identity substitution for the newly bound variable. The lambda bound variable will be replaced by itself. This is the desired working of capture-avoiding substitution: shadowed variables will not be changed.
+
+Single substitution can be implemented using simultaneous substitution. We need some form of single substitution in order to be able to implement %\beta$-reduction later on. A single substitution is created by extending the identity substitution with one free variable and a term.
+
+\begin{code}
 
 ι : ∀ {Γ} → Γ => Γ
 ι {ε}       = sz
-ι {y , y'}  = ιss  (ι {y})
+ι {y , y'}  = wkExtS vz vz (ι {y})
 
-wkSI-ι : ∀ {Γ τ} → (v : _∋_ Γ τ) → wkSI v v ι ≡ ι
-wkSI-ι vz = refl
-wkSI-ι (vs y) =
+sub : ∀ {Γ τ} → (v : Γ ∋ τ) → (x : Γ - v ⊢ τ) → Γ => Γ - v
+sub v x = extS v x ι
+
+\end{code}
+
+
+%if False
+\begin{code}
+
+wkExtS-ι : ∀ {Γ τ} → (v : _∋_ Γ τ) → wkExtS v v ι ≡ ι
+wkExtS-ι vz = refl
+wkExtS-ι (vs y) =
        begin
        _ ≡⟨ cong (λ p → ss (extS y (var (vs y)) p) (var vz)) (sym (wkSExc (vs y) vz ι)) ⟩
        _ ≡⟨ cong (λ p → ss p (var vz)) (wk-ext-comm y vz (var y) (wkS y ι)) ⟩
-       _ ≡⟨ cong (λ p → ss (wkS vz p) (var vz)) (wkSI-ι y) ⟩
+       _ ≡⟨ cong (λ p → ss (wkS vz p) (var vz)) (wkExtS-ι y) ⟩
        _ ∎
-
-lookup : ∀ {Γ Δ τ} → (v : _∋_ Γ τ) → Γ => Δ → _⊢_ Δ τ
-lookup vz (ss y y')      = y'
-lookup (vs y) (ss y' y0) = lookup y y'
 
 wk-lookup : ∀ {Γ Δ τ σ} → (v : _∋_ Γ τ) → (x : _∋_ Δ σ) → (s : Γ => Δ - x) → lookup v (wkS x s) ≡ wkTm x (lookup v s)
 wk-lookup vz x (ss y y') = refl
@@ -149,34 +183,21 @@ ext-wkv-lookup : ∀ {Γ Δ τ σ} → (v : _∋_ Γ τ) → (y : _∋_ (Γ - v)
 ext-wkv-lookup vz y x s = refl
 ext-wkv-lookup (vs y) vz x (ss y0 y1) = refl
 ext-wkv-lookup (vs y) (vs y') x (ss y0 y1) = ext-wkv-lookup y y' x y0
-\end{code}
-%endif
 
-
-\begin{code}
-infix 8 _/_
-_/_ : ∀ {Γ Δ τ} → _⊢_ Γ τ → Γ => Δ → _⊢_ Δ τ
-_/_ (var y)   f = lookup y f
-_/_ (Λ y)     f = Λ (y / wkSI vz vz f)
-_/_ (y · y')  f = (y / f) · (y' / f)
-\end{code}
-
-%if False
-\begin{code}
 wk/ : ∀ {Γ Δ τ σ} → (x : _∋_ Δ σ) → (t : _⊢_ Γ τ) → (s : Γ => Δ - x) 
                → t / wkS x s ≡ wkTm x (t / s)
 wk/ x (var y) s = wk-lookup y x s
 wk/ x (Λ y) s = begin
              _ ≡⟨ cong (λ v → Λ (y / extS vz (var vz) v)) (wkSExc (vs x) vz s) ⟩
              _ ≡⟨ cong (λ v → Λ (y / v)) (wk-ext-comm vz (vs x) (var vz) (wkS vz s))  ⟩
-             _ ≡⟨ cong Λ (wk/ (vs x) y (wkSI vz vz s)) ⟩
+             _ ≡⟨ cong Λ (wk/ (vs x) y (wkExtS vz vz s)) ⟩
              _ ∎
 wk/ x (y · y') s = cong₂ _·_ (wk/ x y s) (wk/ x y' s)
 
-ι/ : ∀ {Γ τ} → (t : _⊢_ Γ τ) → t / ι ≡ t
-ι/ (var y)    = ι-lookup y
-ι/ (Λ y)      = cong Λ (ι/ y)
-ι/ (y · y')  = cong₂ _·_ (ι/ y) (ι/ y')
+/ι : ∀ {Γ τ} → (t : _⊢_ Γ τ) → t / ι ≡ t
+/ι (var y)    = ι-lookup y
+/ι (Λ y)      = cong Λ (/ι y)
+/ι (y · y')  = cong₂ _·_ (/ι y) (/ι y')
 
 wk-ext/ : ∀ {Γ Δ τ σ} → (v : _∋_ Γ σ) → (t : _⊢_ (Γ - v) τ) → (x : _⊢_ Δ σ) 
         → (s : Γ - v => Δ) → wkTm v t / extS v x s ≡ t / s
@@ -205,23 +226,19 @@ wkS-ext/ v (Λ y) s s' x = begin
                    _ ≡⟨ cong Λ (wkS-ext/ (wkv vz v) y (ss (wkS vz s) (var vz)) (ss (wkS vz s') (var vz)) (wkTm vz x)) ⟩
                    _ ∎
 wkS-ext/ v (y · y') s s' x = cong₂ _·_ (wkS-ext/ v y s s' x) (wkS-ext/ v y' s s' x)
-{-
-dist-wkSI : ∀ {Γ Δ Δ' τ σ} → (v : _∋_ Γ σ) → (w : _∋_ Δ σ) → (u : _∋_ Δ σ)
-            → (t : _∋_ Γ τ) → (s : Γ - v => Δ - w)
--}
 
 dist-lookup : ∀ {Γ Δ τ σ} → (v : _∋_ Γ σ) → (w : _∋_ Δ σ) → (x : _⊢_ (Δ - w) σ)
            → (y : _∋_ Γ τ) → (s : Γ - v => Δ - w)
-           → lookup y (extS v x s) ≡ lookup y (wkSI v w s) / extS w x ι
+           → lookup y (extS v x s) ≡ lookup y (wkExtS v w s) / extS w x ι
 dist-lookup vz w x vz s = sym (ext-lookup w x ι)
 dist-lookup (vs y) w x vz (ss y' y0) =
   begin
-  _ ≡⟨ sym (ι/ y0) ⟩
+  _ ≡⟨ sym (/ι y0) ⟩
   _ ≡⟨ sym (wk-ext/ w y0 x ι) ⟩
   _ ∎
 dist-lookup vz w x (vs y) s 
   = begin
-  _ ≡⟨ sym (ι/ (lookup y s)) ⟩
+  _ ≡⟨ sym (/ι (lookup y s)) ⟩
   _ ≡⟨ sym (wk-ext/ w (lookup y s) x ι) ⟩
   _ ≡⟨ cong (\p → p / extS w x ι) (sym (wk-lookup y w s)) ⟩
   _ ∎
@@ -230,7 +247,7 @@ dist-lookup (vs y) w x (vs y') (ss y0 y1) = dist-lookup y w x y' y0
 dist-sub : ∀ {Γ Δ τ σ} → (v : _∋_ Γ σ) → (t : _⊢_ Γ τ) 
            → (w : _∋_ Δ σ) → (x : _⊢_ (Δ - w) σ)
            → (s : Γ - v => Δ - w)
-           → t / extS v x s ≡ (t / wkSI v w s) / extS w x ι
+           → t / extS v x s ≡ (t / wkExtS v w s) / extS w x ι
 dist-sub v (var y) w x s = dist-lookup v w x y s 
 dist-sub v (Λ y) w x s 
   = begin
@@ -240,17 +257,17 @@ dist-sub v (Λ y) w x s
          (λ p1 p2 →
             Λ ((y / ss (extS v (var (vs w)) p1) (var vz)) / ss p2 (var vz)))
          (sym (wkSExc (vs w) vz s)) (wk-ext-comm w vz x ι) ⟩
-  _ ≡⟨ cong (λ p → Λ ((y / ss p (var vz)) / wkSI vz vz (extS w x ι))) (wk-ext-comm v vz (var w) (wkS w s)) ⟩
+  _ ≡⟨ cong (λ p → Λ ((y / ss p (var vz)) / wkExtS vz vz (extS w x ι))) (wk-ext-comm v vz (var w) (wkS w s)) ⟩
   _ ∎
 dist-sub v (y · y') w x s = cong₂ _·_ (dist-sub v y w x s) (dist-sub v y' w x s)
 
-wkSI/ : ∀ {Γ Δ τ σ} → (v : _∋_ Γ σ) → (w : _∋_ Δ σ) → (t : _⊢_ (Γ - v) τ)
-        → (s : Γ - v => Δ - w) → wkTm v t / wkSI v w s ≡ wkTm w (t / s)
-wkSI/ v w (var y) s = begin
+wkExtS/ : ∀ {Γ Δ τ σ} → (v : _∋_ Γ σ) → (w : _∋_ Δ σ) → (t : _⊢_ (Γ - v) τ)
+        → (s : Γ - v => Δ - w) → wkTm v t / wkExtS v w s ≡ wkTm w (t / s)
+wkExtS/ v w (var y) s = begin
               _ ≡⟨ ext-wkv-lookup v y (var w) (wkS w s) ⟩
               _ ≡⟨ wk-lookup y w s ⟩
               _ ∎
-wkSI/ v w (Λ y) s      =
+wkExtS/ v w (Λ y) s      =
              begin
              _ ≡⟨ cong (λ p → Λ (wkTm (vs v) y / ss p (var vz)))
                     (sym (wk-ext-comm v vz (var w) (wkS w s))) ⟩
@@ -258,14 +275,14 @@ wkSI/ v w (Λ y) s      =
                     (λ p →
                        Λ (wkTm (vs v) y / extS (vs v) (var (vs w)) (ss p (var vz))))
                     (sym (wkSExc vz w s)) ⟩
-             _ ≡⟨ cong Λ (wkSI/ (vs v) (vs w) y (ss (wkS vz s) (var vz))) ⟩
+             _ ≡⟨ cong Λ (wkExtS/ (vs v) (vs w) y (ss (wkS vz s) (var vz))) ⟩
              _ ∎
-wkSI/ v w (y · y') s = cong₂ _·_ (wkSI/ v w y s) (wkSI/ v w y' s)
+wkExtS/ v w (y · y') s = cong₂ _·_ (wkExtS/ v w y s) (wkExtS/ v w y' s)
 
 comm-/-lookup : ∀ {Γ Δ Δ' τ σ} → (v : _∋_ Γ σ) → (y : _∋_ Γ τ) 
            → (w : _∋_ Δ σ) → (x : _⊢_ (Δ - w) σ)
            → (s : Γ - v => Δ - w) → (s' : Δ - w => Δ')
-           →  lookup y (extS v x s) / s' ≡ lookup y (wkSI v w s) / extS w (x / s') s'
+           →  lookup y (extS v x s) / s' ≡ lookup y (wkExtS v w s) / extS w (x / s') s'
 comm-/-lookup vz vz w x s s' = sym (ext-lookup w (x / s') s')
 comm-/-lookup vz (vs y) w x s s' 
   = begin
@@ -278,27 +295,49 @@ comm-/-lookup (vs y) (vs y') w x (ss y0 y1) s' = comm-/-lookup y y' w x y0 s'
 comm-/ : ∀ {Γ Δ Δ' τ σ} → (v : _∋_ Γ σ) → (t : _⊢_ Γ τ) 
        → (w : _∋_ Δ σ) → (x : _⊢_ (Δ - w) σ)
        → (s : Γ - v => Δ - w) → (s' : Δ - w => Δ')
-       → (t / extS v x s) / s' ≡ (t / wkSI v w s) / extS w (x / s') s'
+       → (t / extS v x s) / s' ≡ (t / wkExtS v w s) / extS w (x / s') s'
 comm-/ v (var y) w x s s' = comm-/-lookup v y w x s s'
 comm-/ v (Λ y) w x s s'
   = begin
-  _ ≡⟨ cong (\p → Λ ((y / ss p (var vz)) / wkSI vz vz s')) (sym (wk-ext-comm v vz x s)) ⟩
+  _ ≡⟨ cong (\p → Λ ((y / ss p (var vz)) / wkExtS vz vz s')) (sym (wk-ext-comm v vz x s)) ⟩
   _ ≡⟨ cong Λ (comm-/ (vs v) y (vs w) (wkTm vz x) (ss (wkS vz s) (var vz)) (ss (wkS vz s') (var vz))) ⟩
   _ ≡⟨ cong₂
          (λ p1 p2 →
             Λ
             ((y / ss (extS v (var (vs w)) p1) (var vz)) /
              ss (extS w p2 (wkS vz s')) (var vz)))
-         (sym (wkSExc (vs w) vz s)) (wkSI/ vz vz x s') ⟩
+         (sym (wkSExc (vs w) vz s)) (wkExtS/ vz vz x s') ⟩
   _ ≡⟨ cong₂ (λ p1 p2 → Λ ((y / ss p1 (var vz)) / ss p2 (var vz))) (wk-ext-comm v vz (var w) (wkS w s)) (wk-ext-comm w vz (x / s') s') ⟩
   _ ∎
 comm-/ v (y · y') w x s s' = cong₂ _·_ (comm-/ v y w x s s') (comm-/ v y' w x s s')
 
-wkS-ι : ∀ {Γ τ σ} → (v : _∋_ Γ σ) → (t : _⊢_ (Γ - v) τ) → t / wkS v ι ≡ wkTm v t
-wkS-ι v t = trans (wk/ v t ι) (cong (λ p → wkTm v p) (ι/ t))
+wk-ext/=> : ∀ {Γ Δ Δ' τ} → (v : Δ ∋ τ) → (v' : Δ' ∋ τ)
+          → (s : Γ => Δ - v) → (s' : Δ - v => Δ' - v') 
+          → wkS v s /=> wkExtS v v' s' ≡ wkS v' (s /=> s')
+wk-ext/=> v v' sz s' = refl
+wk-ext/=> v v' (ss y y') s' = cong₂ ss (wk-ext/=> v v' y s') (wkExtS/ v v' y' s')
 
-sub : ∀ {Γ τ} → (v : _∋_ Γ τ) → (x : _⊢_ (Γ - v) τ) → Γ => Γ - v
-sub v x = extS v x ι
+comm-lookup-/=> : ∀ {Γ Δ Δ' τ} → (y : Γ ∋ τ) → (s : Γ => Δ) → (s' : Δ => Δ')
+                → (lookup y s) / s' ≡ lookup y (s /=> s')
+comm-lookup-/=> vz (ss y y') s' = refl
+comm-lookup-/=> (vs y) (ss y' y0) s' = comm-lookup-/=> y y' s'
+
+comm-/-/=> : ∀ {Γ Δ Δ' τ} → (t : Γ ⊢ τ) → (s : Γ => Δ) → (s' : Δ => Δ')
+           → (t / s) / s' ≡ t / (s /=> s')
+comm-/-/=> (var y) s s' = comm-lookup-/=> y s s'
+comm-/-/=> (Λ y) s s' =
+           begin 
+           _ ≡⟨ cong Λ (comm-/-/=> y (ss (wkS vz s) (var vz)) (ss (wkS vz s') (var vz))) ⟩
+           _ ≡⟨ cong (λ v → Λ (y / ss v (var vz))) (wk-ext/=> vz vz s s') ⟩
+           _ ∎
+comm-/-/=> (y · y') s s' = cong₂ _·_ (comm-/-/=> y s s') (comm-/-/=> y' s s')
+
+/=>ι : ∀ {Γ Δ} → (s : Γ => Δ) → s /=> ι ≡ s
+/=>ι sz = refl
+/=>ι (ss y y') = cong₂ ss (/=>ι y) (/ι y')
+
+wkS-ι : ∀ {Γ τ σ} → (v : _∋_ Γ σ) → (t : _⊢_ (Γ - v) τ) → t / wkS v ι ≡ wkTm v t
+wkS-ι v t = trans (wk/ v t ι) (cong (λ p → wkTm v p) (/ι t))
 
 substVar-lookup : forall {σ Γ τ} → (v : _∋_ Γ τ) → (x : _∋_ Γ σ) → (t : _⊢_ (Γ - x) σ)
            → substVar v x t ≡ lookup v (sub x t)

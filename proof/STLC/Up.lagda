@@ -49,11 +49,11 @@ subst-up {Γ} t v u =
 
 up-/sz : ∀ {Γ τ} → (t : _⊢_ ε τ) → up {Γ} t ≡ t / sz
 up-/sz (var ())
-up-/sz {ε} (Λ y) = cong Λ (sym (ι/ y))
+up-/sz {ε} (Λ y) = cong Λ (sym (/ι y))
 up-/sz {y , y'} (Λ y0) 
   = begin
   _ ≡⟨ cong (\p → wkTm vz p) (up-/sz {y} (Λ y0)) ⟩
-  _ ≡⟨ cong Λ (sym (wkSI/ vz (vs vz) y0 (ss sz (var vz)))) ⟩
+  _ ≡⟨ cong Λ (sym (wkExtS/ vz (vs vz) y0 (ss sz (var vz)))) ⟩
   _ ≡⟨ cong Λ (wk-ext/ vz y0 (var (vs vz)) (ss sz (var vz))) ⟩
   _ ∎
 up-/sz (y · y') 
@@ -63,7 +63,7 @@ up-/sz (y · y')
   _ ∎
 
 up/ε : ∀ {Γ τ} → (t : _⊢_ ε τ) → (s : Γ => ε) → up t / s ≡ t
-up/ε t sz = ι/ t
+up/ε t sz = /ι t
 up/ε t (ss y y') = begin
                _ ≡⟨ wk-ext/ vz (up t) y' y ⟩
                _ ≡⟨ up/ε t y ⟩
@@ -81,7 +81,7 @@ up/ {a , b} {y , y'} t (ss y0 y1) = begin
             _ ∎
 
 sz/ : ∀ {Δ τ} → (t : _⊢_ ε τ) → t / (sz {Δ}) ≡ up t
-sz/ {ε} t      = ι/ t
+sz/ {ε} t      = /ι t
 sz/ {y , y'} t 
   = begin
   _ ≡⟨ wk/ vz t sz ⟩
