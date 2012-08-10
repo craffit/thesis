@@ -24,32 +24,19 @@ data _∶_⊨_↝_ : (φ : Ftx) → (Φ : Functor) → ⟦ φ ⟧Γ A ⊢ ⟦ Φ
              → φ ∶ (Φ₁ ⟶ Φ₂) ⊨ e₁ ↝ e₁' → φ ∶ Φ₁ ⊨ e₂ ↝ e₂' 
              → φ ∶ Φ₂ ⊨ (e₁ · e₂) ↝ (e₁' · e₂')
   lam   : ∀ {φ Φ₁ Φ₂ e e'} → (φ , Φ₁) ∶ Φ₂ ⊨ e ↝ e' → φ ∶ (Φ₁ ⟶ Φ₂) ⊨ Λ e ↝ Λ e'
-  wk    : ∀ {φ Φ Φ'} → (v : φ ∋↝ Φ') 
-            → {e : ⟦ φ -↝ v ⟧Γ A ⊢ ⟦ Φ ⟧Φ A} → {e' : ⟦ φ -↝ v ⟧Γ R ⊢ ⟦ Φ ⟧Φ R}
-            → (φ -↝ v) ∶ Φ ⊨ e ↝ e' 
-            → φ ∶ Φ ⊨ wkTm (⟦ v ⟧∋ A) (! substV-eq v >₁ e) ↝ wkTm (⟦ v ⟧∋ R) (! substV-eq v >₁ e')
+  wk    : ∀ {φ Φ Φ'} 
+          → {e : ⟦ φ ⟧Γ A ⊢ ⟦ Φ ⟧Φ A} → {e' : ⟦ φ ⟧Γ R ⊢ ⟦ Φ ⟧Φ R}
+          → φ ∶ Φ ⊨ e ↝ e' 
+          → (φ , Φ') ∶ Φ ⊨ wkTm vz e ↝ wkTm vz e'
   i-rep : ∀ {φ e e'} → φ ∶ K A ⊨ e ↝ e' → φ ∶ Id ⊨ e ↝ (up rep · e')
-  i-abs : ∀ {φ e e'} → φ ∶ Id ⊨ e ↝ e' → φ ∶ K A ⊨ e ↝ (up abs · e')
+  i-abs : ∀ {φ e e'} → φ ∶ Id ⊨ e ↝ e' → φ ∶ K A ⊨ e ↝ (up abs · e') 
 
-!_↝_>↝_ : ∀ {φ Φ e e' ec ec'} → e ≡ ec → e' ≡ ec' → φ ∶ Φ ⊨ e ↝ e' → φ ∶ Φ ⊨ ec ↝ ec'
-! refl ↝ refl >↝ t = t 
- 
-open ≡-Reasoning
-{-
-wk↝ : ∀ {φ Φ Φ'} → (x : φ ∋↝ Φ') 
-    → {e : ⟦ φ -↝ x ⟧Γ A ⊢ ⟦ Φ ⟧Φ A} → {e' : ⟦ φ -↝ x ⟧Γ R ⊢ ⟦ Φ ⟧Φ R}
-    → (φ -↝ x) ∶ Φ ⊨ e ↝ e' 
-    → φ ∶ Φ ⊨ wkTm (⟦ x ⟧∋ A) (! substV-eq x >₁ e) ↝ wkTm (⟦ x ⟧∋ R) (! substV-eq x >₁ e')
-wk↝ x (var v) = ! {!sym (cong (wkTm (⟦ x ⟧∋ A)) (!var (substV-eq x) (⟦ v ⟧∋ A)))!} ↝ {!!} >↝ var (wkv↝ x v)
-wk↝ x (app y y') = ! sym (cong (wkTm _) (!· (substV-eq x) _ _)) ↝ sym (cong (wkTm _) (!· (substV-eq x) _ _)) >↝ app (wk↝ x y) (wk↝ x y')
-wk↝ x (lam y) = {!lam ?!}
-wk↝ {φ} x (i-rep {.(φ -↝ x)} {e} {e'} y) = ! refl ↝ (begin _ ≡⟨ {!!} ⟩ _ ≡⟨ cong (λ v' → wkTm _ v' · wkTm (⟦ x ⟧∋ R) (! substV-eq x >₁ e')) (sym (!up (substV-eq x) rep)) ⟩ _ ≡⟨ refl ⟩ _ ≡⟨ cong (wkTm _) (sym (!· (substV-eq x) {!!} {!!})) ⟩ _ ∎) >↝ i-rep (wk↝ x y)
-wk↝ x (i-abs y) = {!!}
--}
+θ' : ∀ {a b} → (ab : ε ⊢ a ⇒ b) → (re : ε ⊢ b ⇒ a) → (φ : Ftx) → ⟦ φ ⟧Γ a => ⟦ φ ⟧Γ b
+θ' _ _ ε        = sz
+θ' a r (y , y') = ss (wkS vz (θ' a r y)) (up (dimap y' · a · r) · var vz)
 
 θ : (φ : Ftx) → ⟦ φ ⟧Γ R => ⟦ φ ⟧Γ A
-θ ε        = sz
-θ (y , y') = ss (wkS vz (θ y)) (up (dimap y' · abs · rep) · var vz)
+θ = θ' abs rep
 
 lookup-θ : ∀ {φ Φ} → (v : φ ∋↝ Φ) → lookup (⟦ v ⟧∋ R) (θ φ) ≡ (up (dimap Φ · abs · rep) · var (⟦ v ⟧∋ A))
 lookup-θ vz     = refl
@@ -60,5 +47,34 @@ lookup-θ (vs {Γ} {Φ} y) =
      _ ≡⟨ cong (wkTm vz) (lookup-θ y) ⟩
      _ ∎
 
+open import Data.Maybe
+open import Data.Product
+open import STLC.Congruence
+
+*-id' : ∀ {Φ τ a b} → (p : just τ ≡ Φ *) → (ab : ε ⊢ b ⇒ a) → (re : ε ⊢ a ⇒ b)
+     → dimap Φ · ab · re βη-≡ ! ε , ≡τrefl ⇒ *-eq≡τ {Φ} p >⊢ idε
+*-id' {Φ} p ab re =
+   let open Relation.Binary.EqReasoning βηsetoid
+           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+   in begin
+      _ ⟷⟨ *-id {Φ} p %· int>⊢ %· int>⊢ ⟩
+      _ ⟷⟨ cong-!>⊢ ≡Γrefl (≡τrefl ⇒ *-eq≡τ {Φ} p) (Λ (Λ (Λ (var vz))) · ab · re) (Λ (var vz)) (β≡ brefl) ⟩
+      _ ∎
+
+
+θ'ι : ∀ {φ Γ a b} → {ab : ε ⊢ a ⇒ b} → {re : ε ⊢ b ⇒ a} 
+   → (p : just Γ ≡ φ *Γ) → θ' {a} {b} ab re φ βη-=> ! ≡Γrefl , *Γ-eq p >=> ι
+θ'ι {ε} p = sz
+θ'ι {φ , Φ} p with *Γ-split {φ} {Φ} p
+θ'ι {φ , Φ} {.(g , t)} {a} {b} p | g , t , eq , eq' , refl =
+  let open Relation.Binary.EqReasoning βη=>setoid
+           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+   in begin
+      _ ⟷⟨ cong-extS vz (cong-wkS vz (θ'ι eq)) (%up (*-id' {Φ} eq' _ _) %· □) ⟩
+      _ ⟷⟨ cong-extS vz (=>sym (=>≡ (!,=>wkSvz ≡Γrefl _ (*-eq≡τ {Φ} {t} {a} eq') _))) (bsym (%≡ !,⊢up (*Γ-eq {φ} {g} {a} eq , ≡τrefl) (≡τrefl ⇒ *-eq≡τ {Φ} eq') (Λ (var vz))) %· %≡ cong var (sym (!,∋vz (*Γ-eq eq) ≡τrefl ≡τrefl))) ⟩
+      _ ⟷⟨ cong-extS vz =>refl (cong-!>⊢ (*Γ-eq eq , ≡τrefl) (*-eq≡τ {Φ} eq') _ _ (id-id (var vz))) ⟩
+      _  ⟷⟨ cong-extS vz =>refl (%≡ cong var (!,∋vz-flip (*Γ-eq eq) (*-eq≡τ {Φ} eq'))) ⟩
+      _  ⟷⟨ cong-extS vz =>refl (%≡ cong (λ v' → ! (*Γ-eq {φ} {g} {a} eq , v') , ≡τrefl {⟦ Φ ⟧Φ a} >⊢ var vz) (≡τ-eq-eq _ _)) ⟩
+      _ ∎
 
 \end{code}

@@ -4,6 +4,8 @@
 
 module STLC.Base where
 
+open import Data.Nat
+
 infixr 6 _⇒_
 infixl 5 _,_
 infix 4 _∋_
@@ -15,7 +17,7 @@ infixl 5 _-_
 \end{code}
 %endif
 
-Fundamental to a mechanical formalization of the TTS system is the representation of the object language, STLC. STLC can be represented in multiple ways, as described in~\cite{keuchel11}. The representation chosen here is a first-order representation using well-typed de Bruijn indices as found in Keller and Altenkirch~\cite{keller10}. A first-order formulation is mandatory because it allows us to inspect and reason about terms and types in the object language. Formulating using well-typed de Buijn indices is useful because it asserts important properties about the terms by construction.
+Fundamental to a mechanical formalization of the TTS system is the representation of the object language, STLC. STLC can be represented in multiple ways, as described in~\cite{keuchel11}. The representation chosen here is a first-order representation using well-typed de Bruijn indices as found in Keller and Altenkirch~\cite{keller10}. A first-order formulation is mandatory because it allows inductive reasoning over terms and types in the object language. Formulating using well-typed de Buijn indices is useful because it asserts important properties about the terms by construction.
 
 \paragraph{de Bruijn indices} Well-typed de Bruijn indices is a way to represent variables in languages based on the lambda calculus. Instead of naming a variable, a variable is given an index which denotes at which lambda the variable is bound. More precisely, the index denotes the number of lambdas that occur between the variable and its binding site. Well-typed de Bruijn are almost the same but each variable now also has an assigned type. When a term contains free variables, a context is used to assign each free variable a type and a binding place. Types and contexts are defined in the following way:
 
@@ -23,6 +25,7 @@ Fundamental to a mechanical formalization of the TTS system is the representatio
 
 data Ty : Set where
   ○    : Ty
+  C    : ℕ → Ty
   _⇒_  : Ty → Ty → Ty
 
 data Con : Set where
@@ -56,7 +59,12 @@ As said, terms are indexed by a context representing the free variables it may c
 
 \paragraph{Benefits of well-types de Bruijn indices} This formulation of the lambda calculus using well-typed de Bruijn indices has some very nice properties. First of all, terms are type-correct by construction: it is impossible to construct a type incorrect term. Another advantage is that free variables are dealt with in a graceful way. All free variables appear in the context. If the context is empty no free variables exist.
 
-\paragraph{Manipulating terms} Variables and terms are built with respect to a certain context. Sometimes we want to change the context by which a term is indexed. To be able express this, we first construct a function which removes a variable from a context:
+\subsection{Manipulating and constructing terms} 
+
+%include Variables.lagda
+
+\paragraph{Context weakening}
+Variables and terms are built with respect to a certain context. Sometimes we want to change the context by which a term is indexed. To be able express this, we first construct a function which removes a variable from a context:
 
 \begin{code}
 
@@ -158,6 +166,8 @@ substDiff3 (vs x) (vs y) = substDiff2 x y (substDiff3 x y)
 !vs : ∀ {Γ Δ σ τ} → (p : Γ ≡ Δ) → (x : _∋_ Γ τ) → ! cong (λ Θ → Θ , σ) p >₀ (vs x) ≡ vs (! p >₀ x)
 !vs refl _ = refl
 
+!- : ∀ {Γ Δ τ} → (p : Γ ≡ Δ) → (v : Γ ∋ τ) → Γ - v ≡ Δ - (! p >₀ v)
+!- refl v = refl
 
 -- Another commutation
 
@@ -170,11 +180,30 @@ substDiff3 (vs x) (vs y) = substDiff2 x y (substDiff3 x y)
 !p : ∀ {Γ Δ σ} → (v : _∋_ Γ σ) → (p q : Γ ≡ Δ) → p ≡ q → ! p >₀ v ≡ ! q >₀ v
 !p v p .p refl = refl
 
+--!!- : ∀ {Γ Δ τ} → (p : Γ ≡ Δ) → !- (cong (λ z → z , τ) p) vz ≡ subst p
+--!!- p = ?
 
 -- Changing the context in which a term is typed
-!_>₁_ : ∀ {Γ Δ σ} → Γ ≡ Δ → _⊢_ Γ σ → _⊢_ Δ σ
+!_>₁_ : ∀ {Γ Δ σ} → Γ ≡ Δ → Γ ⊢ σ → Δ ⊢ σ
 ! refl >₁ t = t
 
+!_>₀'_ : ∀ {Γ Δ σ} → Γ ≡ Δ → _∋_ Γ σ → _∋_ Δ σ
+! refl >₀' vz = vz
+! refl >₀' vs y = vs (! refl >₀' y)
+
+!_>₁'_ : ∀ {Γ Δ σ} → Γ ≡ Δ → Γ ⊢ σ → Δ ⊢ σ
+! refl >₁' var y = var (! refl >₀' y)
+! refl >₁' (Λ y) = Λ (! refl >₁' y)
+! refl >₁' (y · y') = ! refl >₁' y · ! refl >₁' y'
+
+!_>τv_ : ∀ {Γ τ σ} → τ ≡ σ → Γ ∋ τ → Γ ∋ σ
+! refl >τv vz = vz
+! refl >τv vs y = vs (! refl >τv y)
+
+!_>τ'_ : ∀ {Γ τ σ} → τ ≡ σ → Γ ⊢ τ → Γ ⊢ σ
+! refl >τ' var y = var (! refl >τv y)
+! refl >τ' (Λ y) = Λ (! refl >τ' y)
+! refl >τ' (y · y') = ! refl >τ' y · ! refl >τ' y'
 
 -- Commutation between term constructors and !_>₁_
 
@@ -189,7 +218,24 @@ substDiff3 (vs x) (vs y) = substDiff2 x y (substDiff3 x y)
 !· : ∀ {Γ Δ σ τ} → (p : Γ ≡ Δ) → (t₁ : _⊢_ Γ (σ ⇒ τ)) → (t₂ : _⊢_ Γ σ) → ! p >₁ _·_ t₁ t₂ ≡ _·_ (! p >₁ t₁) (! p >₁ t₂)
 !· refl _ _ = refl
 
+!_>τ_ : ∀ {Γ τ σ} → (p : τ ≡ σ) → (t : Γ ⊢ τ) → Γ ⊢ σ
+! refl >τ t = t
 
+!τΛ : ∀ {Γ σ τ τ'} → (p : τ ≡ τ') → (t : Γ , σ ⊢ τ) → ! cong (_⇒_ σ) p >τ Λ t ≡ Λ (! p >τ t)
+!τΛ refl t = refl
+
+!τvvz : ∀ {Γ τ τ'} → (p : τ ≡ τ') → ! p >τ var vz ≡ ! cong (_,_ Γ) (sym p) >₁ var vz
+!τvvz refl = refl
+
+!τwkv : ∀ {Γ σ τ τ'} → (p : τ ≡ τ') → (v : Γ ∋ σ) → (y : Γ - v ∋ τ) → ! refl >τv wkv v y ≡ wkv v (! refl >τv y)
+!τwkv refl vz y = refl
+!τwkv refl (vs y) vz = refl
+!τwkv refl (vs y) (vs y') = cong vs (!τwkv refl y y')
+
+!τwkTm : ∀ {Γ σ τ τ'} → (p : τ ≡ τ') → (v : Γ ∋ σ) → (u : Γ - v ⊢ τ) → ! p >τ' wkTm {σ} v u ≡ wkTm v (! p >τ' u)
+!τwkTm refl v (var y)  = cong var (!τwkv refl v y)
+!τwkTm refl v (Λ y)    = cong Λ (!τwkTm refl (vs v) y)
+!τwkTm refl v (y · y') = cong₂ _·_ (!τwkTm refl v y) (!τwkTm refl v y')
 -- Commutation between wkTm and !_>₁_
 
 !wkTm : ∀ {Γ Δ σ τ} → (p : Γ ≡ Δ) → (u : _⊢_ Γ τ) → ! cong (λ Θ → Θ , σ) p >₁ wkTm vz u ≡ wkTm vz (! p >₁ u)

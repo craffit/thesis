@@ -17,8 +17,6 @@ import Relation.Binary.EqReasoning
 
 \begin{code}
 
--- Evaluation
-
 _⟦·⟧_ : ∀ {Γ τ σ} → Γ ⊢ σ ⇒ τ → Γ ⊢ σ → Γ ⊢ τ
 _⟦·⟧_ (Λ f) a    = f / sub vz a
 _⟦·⟧_ (var x) a  = var x · a
@@ -69,24 +67,4 @@ evalβη (y · y')  =
          t'
        ∎
 
-\end{code}
-
-Full normalization
-
-\begin{code}
-infixl 4 _↣_
-
-data _↣_ : {Γ : Con} {τ : Ty} → Γ ⊢ τ → Γ ⊢ τ → Set where
-  lamc  : ∀ {Γ σ τ} {t1 t2 : Γ , σ ⊢ τ} → t1 ↣ t2 → Λ t1 ↣ Λ t2
-  left  : ∀ {Γ σ τ} {t : Γ ⊢ σ} {t1 t2 : Γ ⊢ σ ⇒ τ} {t3 : Γ ⊢ τ} 
-            → t1 ↣ t2 → t2 · t ↣ t3 → t1 · t ↣ t3
-  right : ∀ {Γ σ τ} {t1 t2 : Γ ⊢ σ} {t : Γ ⊢ σ ⇒ τ} {t3 : Γ ⊢ τ} 
-            → t1 ↣ t2 → t · t2 ↣ t3 → t · t1 ↣ t3
-  beta  : ∀ {Γ σ τ} {t1 : Γ , σ ⊢ τ} {t2 : Γ ⊢ σ} {t3 : Γ ⊢ τ} → t1 / sub vz t2 ↣ t3 → Λ t1 · t2 ↣ t3
-
-↣-βη : ∀ {Γ τ} {t1 t2 : Γ ⊢ τ} → t1 ↣ t2 → t1 βη-≡ t2
-↣-βη (lamc y)     = congΛ (↣-βη y)
-↣-βη (left y y')  = btrans (congApp (↣-βη y) brefl) (↣-βη y')
-↣-βη (right y y') = btrans (congApp brefl (↣-βη y)) (↣-βη y')
-↣-βη (beta y)     = btrans beta (↣-βη y)
 \end{code}

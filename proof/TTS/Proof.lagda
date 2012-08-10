@@ -31,7 +31,7 @@ module Proof  (rep-abs : (abs ∘ rep) βη-≡ id) (abs-rep : ∀ {φ e e'} →
          _ ⟷⟨ %Λ do-comp _ _ _ ⟩
          _ ⟷⟨ %Λ (□ %· dimap-abs-rep {φ , Φ₁} {Φ₁} (TTS.var vz)) ⟩
          _ ⟷⟨ %Λ do-comp _ _ _ ⟩
-         _ ⟷⟨ %Λ dimap-abs-rep {φ , Φ₁} {Φ₂} (TTS.app (TTS.wk vz t) (TTS.var vz)) ⟩
+         _ ⟷⟨ %Λ dimap-abs-rep {φ , Φ₁} {Φ₂} (TTS.app (TTS.wk t) (TTS.var vz)) ⟩
          _ ⟷⟨ eta ⟩
          _ ∎
 
@@ -97,8 +97,56 @@ module Proof  (rep-abs : (abs ∘ rep) βη-≡ id) (abs-rep : ∀ {φ e e'} →
          _ ⟷⟨ bsym eta ⟩
          _ ⟷⟨ %Λ (%≡ sym (up-/sz comp) %· (%≡ sym (up-/sz comp) %· □ %· □) %· □ %· □) ⟩
          _ ⟷⟨ %Λ (do-comp _ _ _ ⟷ do-comp _ _ _) ⟩
-         _ ⟷⟨ %Λ (bsym (!up/ _ (ss (wkS vz (θ φ)) _)) %· beta ⟷ (%≡ wk-ext/ (vs vz) (e' / ss (wkS vz (θ φ)) (var vz)) (var vz) (ss (wkS vz ι) (wkTm vz (up (dimap Φ₁ · abs · rep)) · var vz)) ⟷ (%≡ sym (wkS-ext/ (vs vz) e' (ss (wkS vz (θ φ)) (var vz)) (ss (wkS vz ι) (_·_ (wkTm vz (up (_·_ (_·_ (dimap Φ₁) abs) rep))) (var vz))) (var vz)) ⟷ %≡ cong (λ p → (e' / ss p (var vz)) / ss (ss (wkS vz ι) (var vz)) (_·_ (wkTm vz (up (_·_ (_·_ (dimap Φ₁) abs) rep))) (var vz))) (wkSExc vz vz (θ φ))) ⟷ %≡ sym (dist-sub vz e' vz (_·_ (wkTm vz (up (_·_ (_·_ (dimap Φ₁) abs) rep))) (var vz)) _))) ⟩
+         _ ⟷⟨ %Λ (bsym (!up/ _ (ss (wkS vz (θ φ)) _)) %· beta) ⟩
+         _ ⟷⟨ %Λ (□ %· (%≡ wk-ext/ (vs vz) (e' / ss (wkS vz (θ φ)) (var vz)) (var vz) (ss (wkS vz ι) (wkTm vz (up (dimap Φ₁ · abs · rep)) · var vz)))) ⟩
+         _ ⟷⟨ %Λ (□ %· (%≡ sym (wkS-ext/ (vs vz) e' (ss (wkS vz (θ φ)) (var vz)) (ss (wkS vz ι) (wkTm vz (up (dimap Φ₁ · abs · rep)) · var vz)) (var vz)))) ⟩
+         _ ⟷⟨ %Λ (□ %· (%≡ cong (λ p → (e' / ss p (var vz)) / ss (ss (wkS vz ι) (var vz)) (wkTm vz (up (dimap Φ₁ · abs · rep)) · var vz)) (wkSExc vz vz (θ φ)))) ⟩
+         _ ⟷⟨ %Λ (□ %· (%≡ sym (dist-sub vz e' vz (wkTm vz (up (dimap Φ₁ · abs · rep)) · var vz) _))) ⟩
          _ ⟷⟨ %Λ tts-prop y ⟩
-         _ ∎ 
-  tts-prop (wk v t) = {!!}
+         _ ∎
+  tts-prop (wk {φ} {Φ} {Φ'} {e} {e'} t) = 
+      let open Relation.Binary.EqReasoning βηsetoid
+           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+      in begin
+         _ ⟷⟨ %≡ wk-ext/ vz (up (dimap Φ · rep · abs) · e') _ _ ⟩
+         _ ⟷⟨ %≡ wk/ vz (up (dimap Φ · rep · abs) · e') _ ⟩
+         _ ⟷⟨ %wkTm vz (tts-prop t) ⟩
+         _ ∎  
+  open import Data.Maybe
+
+  !* : ∀ {φ Φ Γ τ} → (p : just Γ ≡ φ *Γ) → (p' : just τ ≡ Φ *) 
+          → {a : Ty} → (e : ⟦ φ ⟧Γ a ⊢ ⟦ Φ ⟧Φ a) → Γ ⊢ τ
+  !* {φ} {Φ} p1 p2 e = ! *Γ-Con {φ} p1 , *-≡τ {Φ} p2 >⊢ e
+
+  tts-eq' : ∀ {φ Φ Γ τ} → {e : ⟦ φ ⟧Γ A ⊢ ⟦ Φ ⟧Φ A} → {e' : ⟦ φ ⟧Γ R ⊢ ⟦ Φ ⟧Φ R} 
+         → φ ∶ Φ ⊨ e ↝ e' → (p : just Γ ≡ φ *Γ) → (p' : just τ ≡ Φ *) 
+         → e βη-≡ ! *Γ-eq {φ} p , *-eq≡τ {Φ} p' >⊢ e'
+  tts-eq' {φ} {Φ} {Γ} {τ} {e} {e'} t p p' =
+      let open Relation.Binary.EqReasoning βηsetoid
+           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+      in  begin
+          _ ⟷⟨ bsym (tts-prop t) ⟩
+          _ ⟷⟨ cong/s (θ'ι p) (up (dimap Φ · rep · abs) · e') ⟩
+          _ ⟷⟨ cong/ {t = (up (dimap Φ · rep · abs) · e')} (%up_ {⟦ φ ⟧Γ R} (*-id' {Φ} p' rep abs) %· □) (! ≡Γrefl , *Γ-eq {φ} p >=> ι) ⟩
+          _ ⟷⟨ %≡ !,⊢/ ≡Γrefl (*Γ-eq {φ} p) ι (up (! ε , ≡τrefl ⇒ *-eq≡τ {Φ} p' >⊢ idε) · e') ⟩
+          _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (cong/ (%≡ !,⊢-id (≡Γsym ≡Γrefl) ≡τrefl (up (! ε , ≡τrefl ⇒ *-eq≡τ {Φ} p' >⊢ idε) · e')) ι) ⟩
+          _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (%≡ /ι (up (! ε , ≡τrefl ⇒ *-eq≡τ {Φ} p' >⊢ idε) · e')) ⟩
+          _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (bsym (%≡ !,⊢up ≡Γrefl _ (Λ (var vz))) %· int>⊢) ⟩
+          _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (cong-!>⊢ ≡Γrefl (*-eq≡τ {Φ} p') _ _ (id-id e')) ⟩
+          _ ⟷⟨ %≡ !,⊢-comm-trans _ _ _ _ _ ⟩
+          _ ⟷⟨ %≡ cong₂ (λ v' v0 → ! v' , v0 >⊢ e') (≡Γ-eq-eq _ _) (≡τ-eq-eq _ _) ⟩
+          _ ∎
+
+  tts-eq : ∀ {φ Φ Γ τ} → {e : ⟦ φ ⟧Γ A ⊢ ⟦ Φ ⟧Φ A} → {e' : ⟦ φ ⟧Γ R ⊢ ⟦ Φ ⟧Φ R} 
+         → φ ∶ Φ ⊨ e ↝ e' → (p : just Γ ≡ φ *Γ) → (p' : just τ ≡ Φ *) 
+         → !* {φ} {Φ} {Γ} {τ} p p' e βη-≡ !* {φ} {Φ} {Γ} {τ} p p' e'
+  tts-eq {e' = e'} p p' t =
+      let open Relation.Binary.EqReasoning βηsetoid
+           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+      in  begin
+          _ ⟷⟨ cong-!>⊢ _ _ _ _ (tts-eq' p p' t) ⟩
+          _ ⟷⟨ %≡ !,⊢-comm-trans _ _ _ _ _ ⟩
+          _ ⟷⟨ %≡ cong₂ (λ v' v0 → ! v' , v0 >⊢ e') (≡Γ-eq-eq _ _) (≡τ-eq-eq _ _) ⟩
+          _ ∎
+
 \end{code}

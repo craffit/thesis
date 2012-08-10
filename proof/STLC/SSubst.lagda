@@ -15,8 +15,8 @@ infix 8 _/=>_
 \end{code}
 %endif
 
-\paragraph{Simultaneous substitution}
-Keller and Altenkirch also give an implementation of single substitution. For our purpose we also require simultaneous substitution. Simultaneous substitution is a substitution technique in which all free variables in a term are replaced, at once, with terms belonging to an entirely new context. We define such a substitution as follows:
+\subsection{Simultaneous substitution}
+The STLC implementation of Keller and Altenkirch makes use of single substitution to implement evaluation and $\beta\eta$-equality. For our purpose we also require simultaneous substitution. Simultaneous substitution is a substitution technique in which all free variables in a term are replaced, at once, with terms belonging to an entirely new context. This is defined as follows:
 
 \begin{code}
 
@@ -26,7 +26,7 @@ data _=>_ : Con → Con → Set where
 
 \end{code}
 
-The substitution type is indexed by two type contexts. The first type context represents the free variables that will be replaced and the second type context represents the new type context after substitution.
+The substitution type is indexed by two type contexts. The first type context represents the free variables that will be replaced and the second type context represents the new type context after substitution. This new type context is the type context for all substituted terms.
 
 %if False
 \begin{code}
@@ -49,7 +49,8 @@ The substitution type is indexed by two type contexts. The first type context re
 \end{code}
 %endif
 
-Before defining the function which will perform the actual substitution on terms, we need some auxiliary functions to manipulate substitutions.
+Before defining the function which will perform the actual substitution on terms, we need some auxiliary functions to manipulate simultaneous substitutions.
+
 \begin{code}
 
 wkS : ∀ {Γ Δ τ} → (x : Δ ∋ τ) → Γ => Δ - x → Γ => Δ
@@ -65,7 +66,7 @@ wkExtS : {Γ Δ : Con} {τ : Ty} → (x : Γ ∋ τ) → (y : Δ ∋ τ)
 wkExtS x y v = extS x (var y) (wkS y v)
 \end{code}
 
-The |wkS| function weakens the result context of a substitution, the |extS| function extends a substitution such that it replaces an extra free variable with a term. |wkExtS| is defined for convenience to create a 'gap' in a substitution. This function adds a new free variable to a substitution which will be replaced a unique other variable.
+The |wkS| function weakens the result context of a substitution, the |extS| function extends a substitution such that it replaces an extra free variable with a term. |wkExtS| is defined for convenience to create a 'gap' in a substitution. This function adds a new free variable to a substitution which will be replaced by another newly created variable.
 
 %if False
 \begin{code}
@@ -73,6 +74,15 @@ The |wkS| function weakens the result context of a substitution, the |extS| func
 !wkS : forall {Γ Γ' Δ σ} → (p : Γ ≡ Γ') → (a : Δ ∋ σ) → (s : Γ => Δ - a) → ! p >₃ wkS a s ≡ wkS a (! p >₃ s)
 !wkS refl _ _ = refl
 
+!wkS₂ : forall {Γ Δ Δ' σ} → (p : Δ ≡ Δ') → (a : Δ ∋ σ) → (s : Γ => Δ - a) → ! p >₂ wkS a s ≡ wkS (! p >₀ a) (! !- p a >₂ s)
+!wkS₂ refl _ _ = refl
+
+!extS : forall {Γ Γ' Δ τ} → (p : Γ ≡ Γ') → (x : Γ ∋ τ) → (t : Δ ⊢ τ) → (s : Γ - x => Δ) → ! p >₃ extS x t s ≡ extS (! p >₀ x) t (! !- p x >₃ s)
+!extS refl x t s = refl 
+
+!extS₂ : forall {Γ Δ Δ' τ} → (p : Δ ≡ Δ') → (x : Γ ∋ τ) → (t : Δ ⊢ τ) → (s : Γ - x => Δ) → ! p >₂ extS x t s ≡ extS x (! p >₁ t) (! p >₂ s)
+!extS₂ refl x t s = refl 
+ 
 wkSExc : forall {Γ Δ σ τ} -> (x : Δ ∋ σ) -> (y : Δ - x ∋ τ) 
       -> (s : Γ => ((Δ - x) - y)) 
       -> wkS (wkv x y) (wkS (rem x y) (! conExc x y >₂ s)) ≡ wkS x (wkS y s)
@@ -129,14 +139,38 @@ _/_ (var y)   s = lookup y s
 _/_ (Λ y)     s = Λ (y / wkExtS vz vz s)
 _/_ (y · y')  s = (y / s) · (y' / s)
 
+\end{code}
+
+Using |lookup| the variable case becomes simple to implement. The interesting case is applying substitutions over lambda abstractions. Lambda abstraction binds a variable from the free variable context of its subterm. In order to be able to apply the given substitution to this subterm, we extend the given substitution with an identity substitution for the newly bound variable. The lambda bound variable will be replaced by itself. This is the desired working of capture-avoiding substitution: shadowed variables will not be changed.
+
+Simultaneous substitutions can not only be applied to terms, but can be applied to other simultaneous substitutions as well. This is shown by the following function.
+
+\begin{code}
 _/=>_ : ∀ {Γ Δ Δ'} → Γ => Δ → Δ => Δ' → Γ => Δ'
 sz       /=> s' = sz
 ss y y'  /=> s' = ss (y /=> s') (y' / s')
 \end{code}
 
-Using |lookup| the variable case becomes simple to implement. The interesting case is applying substitutions over lambda abstractions. Lambda abstraction binds a variable from the free variable context of its subterm. In order to be able to apply the given substitution to this subterm, we extend the given substitution with an identity substitution for the newly bound variable. The lambda bound variable will be replaced by itself. This is the desired working of capture-avoiding substitution: shadowed variables will not be changed.
+The result of applying such a combined substitution should be the same as applying both substitution individually to a term. This is shown by the following commutation property:
 
-Single substitution can be implemented using simultaneous substitution. We need some form of single substitution in order to be able to implement %\beta$-reduction later on. A single substitution is created by extending the identity substitution with one free variable and a term.
+%if False
+\begin{code} 
+{- 
+\end{code}
+%endif
+
+\begin{code}
+comm-/-/=>  : ∀ {Γ Δ Δ' τ} → (t : Γ ⊢ τ) → (s : Γ => Δ) → (s' : Δ => Δ')
+            → (t / s) / s' ≡ t / (s /=> s')
+\end{code}
+
+%if False
+\begin{code} 
+-} 
+\end{code}
+%endif
+      
+\paragraph{Single substitution} Single substitution can be implemented using simultaneous substitution. Single substitution is needed in order to be able to implement $\beta$-reduction. A single substitution is created by extending the identity substitution with one free variable and a term.
 
 \begin{code}
 
@@ -149,9 +183,11 @@ sub v x = extS v x ι
 
 \end{code}
 
-
 %if False
 \begin{code}
+!/ : ∀ {Γ Δ Δ' τ} → (p : Δ ≡ Δ') → (t : Γ ⊢ τ) → (s : Γ => Δ) 
+   → ! p >₁ (t / s) ≡ t / ! p >₂ s
+!/ refl t s = refl
 
 wkExtS-ι : ∀ {Γ τ} → (v : _∋_ Γ τ) → wkExtS v v ι ≡ ι
 wkExtS-ι vz = refl

@@ -11,16 +11,31 @@ open import STLC.Eval
 open import STLC.Variables
 
 import Relation.Binary.EqReasoning
+open import Relation.Binary.PropositionalEquality
 
 idε : ∀ {a} → ε ⊢ a ⇒ a
 idε = Λ (var vz)
+\end{code}
+%endif
+
+These term construction tricks allow for reasonably convenient construction of terms in the object language, such as the basic identity, constant and composition functions:
+
+\begin{code}
 
 id : ∀ {a Γ} → Γ ⊢ a ⇒ a
-id = up idε
+id = Λ (v 0)
 
 const : ∀ {a b Γ} → Γ ⊢ a ⇒ b ⇒ a
-const = up (Λ (Λ (v 1)))
+const = Λ (Λ (v 1))
 
+infixl 2 _∘_
+_∘_ : ∀ {a b c Γ} → Γ ⊢ b ⇒ c → Γ ⊢ a ⇒ b → Γ ⊢ a ⇒ c
+t1 ∘ t2 = Λ (Λ (Λ (v 2 · (v 1 · v 0)))) · t1 · t2
+
+\end{code}
+
+%if False
+\begin{code}
 const' : ∀ {a b Γ} → Γ ⊢ b ⇒ a ⇒ a
 const' = up (Λ (Λ (v 0)))
 
@@ -29,10 +44,6 @@ flip = up (Λ (Λ (Λ (v 2 · v 0 · v 1))))
 
 comp : ∀ {a b c} → ε ⊢ (b ⇒ c) ⇒ (a ⇒ b) ⇒ a ⇒ c
 comp = Λ (Λ (Λ (v 2 · (v 1 · v 0))))
-
-infixl 2 _∘_
-_∘_ : ∀ {a b c Γ} → Γ ⊢ (b ⇒ c) → Γ ⊢ (a ⇒ b) → Γ ⊢ (a ⇒ c)
-t1 ∘ t2 = up comp · t1 · t2
 
 do-comp : ∀ {a b c Γ} → (f2 : Γ ⊢ b ⇒ c) → (f1 : Γ ⊢ a ⇒ b) → (a : Γ ⊢ a) → ((f2 ∘ f1) · a) βη-≡ (f2 · (f1 · a))
 do-comp f2 f1 a = 
@@ -48,6 +59,11 @@ infixl 2 _%∘_
 
 _%∘_ : ∀ {Γ a b c} → {f₁ f₁' : Γ ⊢ (a ⇒ b)} → {f₂ f₂' : Γ ⊢ (b ⇒ c)} → f₂ βη-≡ f₂' → f₁ βη-≡ f₁' → f₂ ∘ f₁ βη-≡ f₂' ∘ f₁'
 _%∘_ p1 p2 = □ %· p1 %· p2
+
+!τ∘ : ∀ {Γ a a' b b' c c'} → (p1 : a ⇒ b ≡ a' ⇒ b') → (p2 : b ⇒ c ≡ b' ⇒ c')
+   → (t1 : Γ ⊢ a ⇒ b) → (t2 : Γ ⊢ b ⇒ c)
+   → (! p2 >τ t2 ∘ ! p1 >τ t1) ≡ ! cong₂ _⇒_ (tyInj-left p1) (tyInj-right p2) >τ (t2 ∘ t1)
+!τ∘ refl refl t1 t2 = refl
 
 comp-assoc : ∀ {a b c d Γ} → (f3 : Γ ⊢ c ⇒ d) → (f2 : Γ ⊢ b ⇒ c) → (f1 : Γ ⊢ a ⇒ b) → f3 ∘ (f2 ∘ f1) βη-≡ (f3 ∘ f2) ∘ f1
 comp-assoc f3 f2 f1 =
@@ -72,14 +88,26 @@ up-comp f2 f1 =
      _ ⟷⟨ bsym (%≡ up-/sz _) ⟩
      _ ∎
 
-id-comp : ∀ {a b} → (f : ε ⊢ a ⇒ b) → idε ∘ f βη-≡ f
+id-comp : ∀ {Γ a b} → (f : Γ ⊢ a ⇒ b) → id ∘ f βη-≡ f
 id-comp f =
   let open Relation.Binary.EqReasoning βηsetoid
           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_ ; _≡⟨_⟩_ to _β⟨_⟩_)
   in begin
-     _ ⟷⟨ β≡ (%Λ β≡ eta) %· □ ⟩
-       id · f
-     ⟷⟨ β≡ brefl ⟩
+     _ ⟷⟨ bsym eta ⟩
+     _ ⟷⟨ %Λ do-comp _ _ _ ⟩
+     _ ⟷⟨ %Λ id-id _ ⟩
+     _ ⟷⟨ eta ⟩
+     _ ∎
+
+comp-id : ∀ {Γ a b} → (f : Γ ⊢ a ⇒ b) → f ∘ id βη-≡ f
+comp-id f =
+  let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_ ; _≡⟨_⟩_ to _β⟨_⟩_)
+  in begin
+     _ ⟷⟨ bsym eta ⟩
+     _ ⟷⟨ %Λ do-comp _ _ _ ⟩
+     _ ⟷⟨ %Λ (□ %· id-id _) ⟩
+     _ ⟷⟨ eta ⟩
      _ ∎
 
 \end{code}

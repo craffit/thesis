@@ -3,6 +3,8 @@
 module TTS.Functor where
 
 open import STLC
+open import Data.Maybe
+open import Category.Monad
 
 import Relation.Binary.EqReasoning
 
@@ -17,6 +19,15 @@ data Functor : Set where
   Id   : Functor
   K    : (τ : Ty) → Functor
   _⟶_  : (Φ₁ Φ₂ : Functor) → Functor
+\end{code}
+
+\begin{code}
+_* : Functor → Maybe Ty
+Id * = nothing
+K τ * = just τ
+(Φ₁ ⟶ Φ₂) * =
+  let open RawMonadPlus monadPlus
+  in _⇒_ <$> Φ₁ * ⊛ Φ₂ *
 \end{code}
 
 The |Id| constructor represents the hole in the functor and the |K| constructor represents a constant type from the object language. Function space is represented by |_⟶_|. The functor data type is essentially a universe type for functors. We can interpret this universe in as types in the object language, yielding the following interpretation function:
@@ -42,6 +53,114 @@ To show that we have constructed a proper functor, we can now give proof of the 
 
 %if False
 \begin{code}
+open import Relation.Binary.PropositionalEquality
+open import STLC.Congruence
+
+*-Ty : ∀ {Φ τ σ} → just τ ≡ Φ * → ⟦ Φ ⟧Φ σ ≡ τ 
+*-Ty {Id} ()
+*-Ty {K τ} refl = refl
+*-Ty {Φ₁ ⟶ Φ₂} p with Φ₁ * | inspect (_*) Φ₁ | Φ₂ * | inspect (_*) Φ₂
+*-Ty {Φ₁ ⟶ Φ₂} {.(x ⇒ x')} {σ} refl | just x | [ eq ] | just x' | [ eq' ] = cong₂ _⇒_ (*-Ty {Φ₁} {x} {σ = σ} (sym eq)) (*-Ty {Φ₂} {x'} {σ = σ} (sym eq'))
+*-Ty {Φ₁ ⟶ Φ₂} () | just x | w | nothing | w2
+*-Ty {Φ₁ ⟶ Φ₂} () | nothing | w | r2 | w2
+
+open import Data.Product
+
+*-split : ∀ {Φ Φ' τ} → just τ ≡ (Φ ⟶ Φ') * 
+      → Σ Ty (\g → Σ Ty (\t → (just g ≡ Φ *) × (just t ≡ Φ' *) × (τ ≡ g ⇒ t)))
+*-split {Φ} {Φ'} p with Φ * | Φ' * 
+*-split refl | just x | just x' = x , (x' , (refl , (refl , refl)))
+*-split () | just x | nothing
+*-split () | nothing | r2
+
+*-≡τ : ∀ {Φ τ σ} → just τ ≡ Φ * → ⟦ Φ ⟧Φ σ ≡τ τ 
+*-≡τ {Id} ()
+*-≡τ {K τ} refl = ≡τrefl
+*-≡τ {Φ₁ ⟶ Φ₂} p with *-split {Φ₁} {Φ₂} p
+*-≡τ {Φ₁ ⟶ Φ₂} p | x , (x' , (eq , (eq' , refl))) = *-≡τ {Φ₁} eq ⇒ *-≡τ {Φ₂} eq'
+
+*-eq≡τ :  ∀ {Φ τ a b} → just τ ≡ Φ * → ⟦ Φ ⟧Φ a ≡τ ⟦ Φ ⟧Φ b
+*-eq≡τ {Φ} p = ≡τtrans (*-≡τ {Φ} p) (≡τsym (*-≡τ {Φ} p))
+
+int>⊢ : ∀ {Γ τ} → {t : Γ ⊢ τ} → t βη-≡ ! ≡Γrefl , ≡τrefl >⊢ t
+int>⊢ {t = t} = bsym (%≡ !,⊢-id ≡Γrefl ≡τrefl t)
+
+*-id : ∀ {Φ τ a b} → (p : just τ ≡ Φ *) 
+     → dimap {a} {b} Φ 
+     βη-≡ ! ε , ≡τrefl ⇒ ≡τrefl ⇒ ≡τrefl ⇒ *-eq≡τ {Φ} p >⊢ Λ (Λ (up idε))
+*-id {Id} ()
+*-id {K τ} refl with ≡τ-eq-refl (≡τtrans ≡τrefl (≡τsym (≡τrefl {τ})))
+... | x = %Λ (%Λ (%Λ bsym (%≡ cong var (!,∋vz ((ε , (≡τrefl ⇒ ≡τrefl)) , (≡τrefl ⇒ ≡τrefl)) ≡τrefl (≡τtrans ≡τrefl (≡τsym ≡τrefl))))))
+*-id {Φ₁ ⟶ Φ₂} p with *-split {Φ₁} {Φ₂} p
+*-id {Φ₁ ⟶ Φ₂} {.(x ⇒ x')} {a} {b} p | x , (x' , (eq , (eq' , refl))) = 
+ 
+  let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+  in begin
+     _ ⟷⟨ %Λ (%Λ (%Λ (%up *-id {Φ₂} {x'} eq' %· □ %· □ %∘ □ %∘ %up *-id {Φ₁} {x} {b} eq %· □ %· □))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (bsym (%≡ !,⊢up ≡Γrefl (≡τrefl ⇒ ≡τrefl ⇒ ≡τrefl ⇒ *-eq≡τ {Φ₂} eq') (Λ (Λ (Λ (var vz))))) %· □ %· □ %∘ □ %∘ bsym (%≡ !,⊢up ≡Γrefl (≡τrefl ⇒ ≡τrefl ⇒ ≡τrefl ⇒ *-eq≡τ {Φ₁} eq) (Λ (Λ (Λ (var vz))))) %· □ %· □))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (□ %· int>⊢ %· int>⊢ %∘ int>⊢ %∘ (□ %· int>⊢ %· int>⊢)))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (cong-!>⊢ ≡Γrefl (≡τrefl ⇒ *-eq≡τ {Φ₂} eq') (Λ (Λ (Λ (var vz))) · v 2 · v 1) (Λ (var vz)) (β≡ brefl) %∘ □ %∘ cong-!>⊢ ≡Γrefl (≡τrefl ⇒ *-eq≡τ {Φ₁} eq) (Λ (Λ (Λ (var vz))) · v 1 · v 2) (Λ (var vz)) (β≡ brefl)))) ⟩
+--     _ ⟷⟨ %Λ (%Λ (%Λ {!!})) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ bsym eta)) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%Λ do-comp _ _ _))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%Λ (□ %· (bsym (%≡ (!,⊢wkTmvz ≡Γrefl (≡τrefl ⇒ *-eq≡τ {Φ₁} eq) ≡τrefl (Λ (var vz)))) %· int>⊢) ⟷ cong-!>⊢ ≡Γrefl (*-eq≡τ {Φ₁} eq) _ _ (id-id (var vz)))))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%Λ do-comp _ _ _))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%Λ (bsym (%≡ !,⊢wkTmvz ≡Γrefl (≡τrefl ⇒ *-eq≡τ {Φ₂} eq') ≡τrefl (Λ (var vz))) %· int>⊢)))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%Λ cong-!>⊢ ≡Γrefl (*-eq≡τ {Φ₂} eq') _ _ (id-id (! ≡Γrefl , ≡τrefl >⊢ var (vs vz) · ! ≡Γrefl , *-eq≡τ {Φ₁} eq >⊢ var vz))))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%Λ (cong-!>⊢ ≡Γrefl (≡τrefl ⇒ *-eq≡τ {Φ₂} eq') _ _ (bsym (int>⊢ {t = var (vs vz)})) %· bsym (int>⊢ {t = ! ≡Γrefl , *-eq≡τ {Φ₁} eq >⊢ (var vz)}))))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%Λ %≡ !,⊢· ≡Γrefl (*-eq≡τ {Φ₁} eq) (*-eq≡τ {Φ₂} eq') (var (vs vz)) (var vz)))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%Λ (□ %· bsym int>⊢) ⟷ eta))) ⟩
+     _ ⟷⟨ %Λ (%Λ (%Λ (%≡ cong (λ v' → ! ≡Γrefl , v' ⇒ *-eq≡τ {Φ₂} eq' >⊢ var vz) (≡τ-eq-eq _ _)))) ⟩
+      _ ∎
+
+{-
+*-id {Id} ()
+*-id {K τ} refl = brefl
+*-id {Φ₁ ⟶ Φ₂} p with *-split {Φ₁} {Φ₂} p
+*-id {Φ₁ ⟶ Φ₂} {τ} {a} {b} p | x , (x' , (eq , eq')) =
+ let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+     p-eq2 : _
+     p-eq2 = cong (\v → (a ⇒ b) ⇒ (b ⇒ a) ⇒ ⟦ Φ₂ ⟧Φ b ⇒ v) (*-eq {Φ₂} {x'} {b} {a} eq')
+     p-eq1 : _
+     p-eq1 = cong (\v → (b ⇒ a) ⇒ (a ⇒ b) ⇒ ⟦ Φ₁ ⟧Φ a ⇒ v) (*-eq {Φ₁} {x} {a} {b} eq)
+ in begin
+    _ ⟷⟨ %Λ (%Λ (%Λ (%up *-id {Φ₂} {x'} eq' %· □ %· □ %∘ □ %∘ %up *-id {Φ₁} {x} {b} eq %· □ %· □))) ⟩
+    _ ⟷⟨ %Λ (%Λ (%Λ (bsym (%≡ !τ'up p-eq2 _) %· □ %· □ %∘ □ %∘ bsym (%≡ !τ'up p-eq1 _) %· □ %· □))) ⟩
+    Λ
+      (Λ
+       (Λ
+        (Λ (Λ (Λ (var (vs (vs vz)) · (var (vs vz) · var vz)))) ·
+         (Λ (Λ (Λ (var (vs (vs vz)) · (var (vs vz) · var vz)))) ·
+          (!
+           p-eq2
+           >τ' Λ (Λ (Λ (var vz)))
+           · var (vs (vs vz))
+           · var (vs vz))
+          · var vz)
+         ·
+         (!
+          p-eq1
+          >τ' Λ (Λ (Λ (var vz)))
+          · var (vs vz)
+          · var (vs (vs vz)))))) ⟷⟨ {!!} ⟩
+    _ ⟷⟨ {!!} ⟩
+    _ ∎
+-}
+{-
+
+*-id' : ∀ {Γ Φ τ a} → {ab re : ε ⊢ a ⇒ a} → (p : just τ ≡ Φ *) 
+      → (t : Γ ⊢ ⟦ Φ ⟧Φ a) → up (dimap Φ · ab · re) · t βη-≡ t
+*-id' {Γ} {Φ} {τ} {a} p t =
+  let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+  in begin
+     _ ⟷⟨ %up (*-id {Φ} {τ} {a} p %· □ %· □) %· □ ⟩
+     _ ⟷⟨ %up_ {_} {_} {_} {Λ (var vz)} (β≡ brefl) %· □ ⟩
+     _ ⟷⟨ (%≡ up-/sz _ %· □) ⟷ β≡ brefl ⟩
+     _ ∎
+-}
 
 do-dimap : ∀ {Φ₁ Φ₂ a b} → (f1 : ε ⊢ a ⇒ b) → (f2 : ε ⊢ b ⇒ a) 
          → dimap (Φ₁ ⟶ Φ₂) · f1 · f2 βη-≡ Λ (up (dimap Φ₂ · f1 · f2) ∘ v 0 ∘ up (dimap Φ₁ · f2 · f1))
@@ -122,5 +241,6 @@ dimapcomp (Φ₁ ⟶ Φ₂) f1 f2 g1 g2 =
        _ ⟷⟨ %Λ (%up dimapcomp Φ₂ f1 f2 g1 g2 %∘ □ %∘ %up dimapcomp Φ₁ g2 g1 f2 f1) ⟩
        _ ⟷⟨ bsym (do-dimap {Φ₁} {Φ₂} (g1 ∘ f1) (f2 ∘ g2)) ⟩
        _ ∎
+
 \end{code}
 %endif

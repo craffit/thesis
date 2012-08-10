@@ -4,6 +4,7 @@ module STLC.Up where
 
 open import STLC.Base
 open import STLC.SSubst
+open import STLC.Variables
 
 open import Relation.Binary.PropositionalEquality renaming (subst to ≡subst)
 open ≡-Reasoning
@@ -11,11 +12,13 @@ open ≡-Reasoning
 
 %endif
 
+\paragraph{Adapting to a new context} A term is always part of a certain context. To use an already defined tern in another term with a different context, the function |up| can be used. It lifts a term without free variables (a combinator) into the free variable context of another term.
+
 \begin{code}
 
 up : ∀ {Γ τ} → ε ⊢ τ → Γ ⊢ τ
-up {ε} t = t
-up {y , y'} t = weaken (up {y} t)
+up {ε}       t = t
+up {y , y'}  t = weaken (up {y} t)
 
 \end{code}
 
@@ -87,5 +90,28 @@ sz/ {y , y'} t
   _ ≡⟨ wk/ vz t sz ⟩
   _ ≡⟨ cong (\p → wkTm vz p) (sz/ t) ⟩
   _ ∎
+
+wk-up : ∀ {Γ σ τ} → (v : Γ ∋ σ) → (t : ε ⊢ τ) → wkTm v (up t) ≡ up t
+wk-up vz t = refl
+wk-up (vs y) t =
+      begin
+      _ ≡⟨ sym (wkTmExc (vs y) vz _) ⟩
+      _ ≡⟨ cong (wkTm vz) (wk-up y t) ⟩
+      _ ∎
+
+!up : ∀ {Γ Δ τ} → (p : Γ ≡ Δ) → (t : ε ⊢ τ) → ! p >₁ up t ≡ up t
+!up refl t = refl
+
+!τup : ∀ {Γ τ τ'} → (p : τ ≡ τ') → (t : ε ⊢ τ) → ! p >τ up t ≡ up {Γ} (! p >τ t)
+!τup refl t = refl
+
+!τ'up : ∀ {Γ τ τ'} → (p : τ ≡ τ') → (t : ε ⊢ τ) → ! p >τ' up t ≡ up {Γ} (! p >τ' t)
+!τ'up {ε} refl t = refl
+!τ'up {y , y'} refl t =
+  begin
+  _ ≡⟨ !τwkTm refl vz (up t) ⟩
+  _ ≡⟨ cong (wkTm vz) (!τ'up {y} refl t) ⟩
+  _ ∎
+
 \end{code}
 %endif
