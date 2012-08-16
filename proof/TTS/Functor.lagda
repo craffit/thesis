@@ -12,7 +12,7 @@ infixr 4 _⟶_
 \end{code}
 %endif
 
-With the object language laid out, we can now develop a representation for our TTS in Agda. Essential to the type and transform system is the typing functor. The typing functor is defined as a straightforward inductive family as follows:
+With the object language laid out, we move on to develop a representation for |(TTS(stlc))| in Agda. Essential to this type and transform system is the typing functor. The typing functor is defined as a straightforward inductive datatype as follows:
 
 \begin{code}
 data Functor : Set where
@@ -20,6 +20,114 @@ data Functor : Set where
   K    : (τ : Ty) → Functor
   _⟶_  : (Φ₁ Φ₂ : Functor) → Functor
 \end{code}
+
+The |Id| constructor represents the hole in the functor and the |K| constructor represents a constant type from the object language. Function space is represented by |_⟶_|. The functor data type is essentially a universe type for functors. We can interpret this universe as types in the object language, using the following interpretation function:
+
+\begin{code} 
+⟦_⟧Φ_ : Functor → Ty → Ty
+⟦ Id       ⟧Φ τ = τ
+⟦ K σ      ⟧Φ τ = σ     
+⟦ Φ₁ ⟶ Φ₂  ⟧Φ τ = ⟦ Φ₁ ⟧Φ τ ⇒ ⟦ Φ₂ ⟧Φ τ
+\end{code}
+
+The functor interpretation function takes a functor and a type to fill into the holes and constructs a type in the object language. Using this interpretation on the type level, we can also construct an accompanying term-level functor for the object language. 
+
+\begin{code}
+dimap : ∀ {a b} → (Φ : Functor) → ε ⊢ (a ⇒ b) ⇒ (b ⇒ a) ⇒ ⟦ Φ ⟧Φ b ⇒ ⟦ Φ ⟧Φ a
+dimap Id         = Λ (Λ (v 0))
+dimap (K τ)      = Λ (Λ id)
+dimap (Φ₁ ⟶ Φ₂)  = Λ (Λ (Λ (up (dimap Φ₂) · v 2 · v 1 ∘ v 0 ∘ up (dimap Φ₁) · v 1 · v 2)))
+\end{code}
+
+%if False
+\begin{code}
+-- Helper function to expand the definition of dimap
+
+do-dimap : ∀ {Φ₁ Φ₂ a b} → (f1 : ε ⊢ a ⇒ b) → (f2 : ε ⊢ b ⇒ a) 
+         → dimap (Φ₁ ⟶ Φ₂) · f1 · f2 βη-≡ Λ (up (dimap Φ₂ · f1 · f2) ∘ v 0 ∘ up (dimap Φ₁ · f2 · f1))
+do-dimap {Φ₁} {Φ₂} f1 f2 =
+    let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+    in begin
+       _ ⟷⟨ beta %· □ ⟩
+--       _ ⟷⟨ %Λ (%Λ (□ %· !upw-up f1 %· □ %∘ □ %∘ □ %· □ %· !upw-up f1)) %· □ ⟩
+       _ ⟷⟨ %Λ (%Λ (!up/ (dimap Φ₂) (ss (ss (ss sz (up f1)) (v 1)) (v 0)) %· □ %· □ %∘ □ %∘ !up/ (dimap Φ₁) (ss (ss (ss sz (up f1)) (v 1)) (v 0)) %· □ %· □)) %· □ ⟩
+       _ ⟷⟨ beta ⟩
+--       _ ⟷⟨ %Λ (□ %· □ %· !upw-up f2 %∘ □ %∘ □ %· !upw-up f2 %· □) ⟩
+       _ ⟷⟨ %Λ (!up/ (dimap Φ₂ · f1) (ss (ss sz (wkTm vz f2)) (v 0)) %· □ %∘ □ %∘ !up/ (dimap Φ₁) (ss (ss sz (wkTm vz f2)) (v 0)) %· □ %· !up/ f1 (ss (ss sz (wkTm vz f2)) (v 0))) ⟩
+       _ ∎
+
+do-dimap' : ∀ {Φ₁ Φ₂ a b Γ} → (f1 : ε ⊢ a ⇒ b) → (f2 : ε ⊢ b ⇒ a) → (e : Γ ⊢ ⟦ Φ₁ ⟶ Φ₂ ⟧Φ b)
+         → up (dimap (Φ₁ ⟶ Φ₂) · f1 · f2) · e βη-≡ up (dimap Φ₂ · f1 · f2) ∘ e ∘ up (dimap Φ₁ · f2 · f1)
+do-dimap' {Φ₁} {Φ₂} f1 f2 e =
+    let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+    in begin
+       _ ⟷⟨ %up do-dimap {Φ₁} {Φ₂} f1 f2 %· □ ⟩
+       _ ⟷⟨ %≡ up-/sz _ %· □ ⟩
+       _ ⟷⟨ %Λ (□ %· (□ %· %≡ wk-ext/ vz (dimap Φ₂ · f1 · f2) _ _ %· □) %· %≡ wk-ext/ vz (dimap Φ₁ · f2 · f1) _ _) %· □ ⟩
+       _ ⟷⟨ beta ⟩
+       _ ⟷⟨ %≡ comm-/-/=> (dimap Φ₂ · f1 · f2) _ _ %∘ □ %∘ %≡ comm-/-/=> (dimap Φ₁ · f2 · f1) _ _ ⟩
+       _ ⟷⟨ bsym (%≡ up-/sz _) %∘ □ %∘ bsym (%≡ up-/sz _) ⟩
+       _ ∎
+\end{code}
+%endif
+
+To show that we have constructed a proper functor, we can now give proof of the functor laws. The functor laws are formulated as follows:
+
+
+
+\begin{code}
+dimapid : ∀ {τ} → (Φ : Functor) → dimap {τ} {τ} Φ · id · id βη-≡ id
+\end{code}
+
+%if False
+\begin{code}
+dimapid Id = β≡ brefl 
+dimapid (K τ) = β≡ brefl
+dimapid {a} (Φ₁ ⟶ Φ₂) =
+    let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+    in begin
+       _ ⟷⟨ do-dimap {Φ₁} {Φ₂} id id ⟩
+       _ ⟷⟨ %Λ (%up dimapid Φ₂ %∘ □ %∘ %up dimapid Φ₁) ⟩
+       _ ⟷⟨ β≡ (β≡ (β≡ (%Λ eta))) ⟩
+       _ ∎
+
+\end{code}
+%endif
+
+\begin{code}
+dimapcomp :  ∀ {τ₁ τ₂ τ₃} → (Φ : Functor) 
+             → (f1 : ε ⊢ τ₃ ⇒ τ₂) → (f2 : ε ⊢ τ₂ ⇒ τ₃) 
+             → (g1 : ε ⊢ τ₂ ⇒ τ₁) → (g2 : ε ⊢ τ₁ ⇒ τ₂) 
+             →     dimap Φ · f1 · f2 ∘ dimap Φ · g1 · g2
+             βη-≡  dimap Φ · (g1 ∘ f1) · (f2 ∘ g2)
+\end{code}
+
+%if False
+\begin{code}
+dimapcomp Id f1 f2 g1 g2 = β≡ brefl
+dimapcomp (K τ) f1 f2 g1 g2 = β≡ (β≡ brefl)
+dimapcomp (Φ₁ ⟶ Φ₂) f1 f2 g1 g2 =
+    let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+    in begin
+       _ ⟷⟨ do-dimap {Φ₁} {Φ₂} f1 f2 %∘ do-dimap {Φ₁} {Φ₂} g1 g2 ⟩
+       _ ⟷⟨ bsym eta ⟩
+       _ ⟷⟨ %Λ do-comp _ _ _ ⟩
+       _ ⟷⟨ %Λ beta ⟩
+       _ ⟷⟨ %Λ (%≡ wk-ext/ (vs vz) (up (dimap Φ₂ · f1 · f2)) (v 0) (ss sz _) %∘ □ %∘ %≡ wk-ext/ (vs vz) (up (dimap Φ₁ · f2 · f1)) (v 0) (ss sz _)) ⟩
+       _ ⟷⟨ %Λ (!up/ _ (ss sz _) %∘ beta %∘ !up/ _ (ss sz _)) ⟩
+       _ ⟷⟨ %Λ (□ %∘ (%≡ wk-ext/ (vs vz) (up (dimap Φ₂ · g1 · g2)) (v 0) (ss sz _) %∘ □ %∘ %≡ wk-ext/ (vs vz) (up (dimap Φ₁ · g2 · g1)) (v 0) (ss sz _)) %∘ □) ⟩
+       _ ⟷⟨ %Λ (□ %∘ (!up/ (dimap Φ₂ · g1 · g2) (ss sz _) %∘ □ %∘ !up/ (dimap Φ₁ · g2 · g1) (ss sz _)) %∘ □) ⟩
+       _ ⟷⟨ %Λ (bsym (comp-assoc _ _ _) ⟷ ((□ %∘ bsym (comp-assoc _ _ _)) ⟷ comp-assoc _ _ _) ⟷ (comp-assoc _ _ _ %∘ □)) ⟩
+       _ ⟷⟨ %Λ (%up dimapcomp Φ₂ f1 f2 g1 g2 %∘ □ %∘ %up dimapcomp Φ₁ g2 g1 f2 f1) ⟩
+       _ ⟷⟨ bsym (do-dimap {Φ₁} {Φ₂} (g1 ∘ f1) (f2 ∘ g2)) ⟩
+       _ ∎
+
+\end{code}
+%endif
 
 \begin{code}
 _* : Functor → Maybe Ty
@@ -30,33 +138,19 @@ K τ * = just τ
   in _⇒_ <$> Φ₁ * ⊛ Φ₂ *
 \end{code}
 
-The |Id| constructor represents the hole in the functor and the |K| constructor represents a constant type from the object language. Function space is represented by |_⟶_|. The functor data type is essentially a universe type for functors. We can interpret this universe in as types in the object language, yielding the following interpretation function:
-
-\begin{code} 
-⟦_⟧Φ_ : Functor → Ty → Ty
-⟦ Id       ⟧Φ τ = τ
-⟦ K σ      ⟧Φ τ = σ     
-⟦ Φ₁ ⟶ Φ₂  ⟧Φ τ = ⟦ Φ₁ ⟧Φ τ ⇒ ⟦ Φ₂ ⟧Φ τ
-\end{code}
-
-The functor interpretation function takes a functor and a type to fill into the hole element and constructs a type in our object language. Using this interpretation on the type level, we can also construct an accompanying term-level functor for the object language. 
-
-\begin{code}
-dimap : ∀ {a b} → (Φ : Functor) → ε ⊢ (a ⇒ b) ⇒ (b ⇒ a) ⇒ ⟦ Φ ⟧Φ b ⇒ ⟦ Φ ⟧Φ a
-dimap Id         = Λ (Λ (v 0))
-dimap (K τ)      = Λ (Λ (up idε))
-dimap (Φ₁ ⟶ Φ₂)  = Λ (Λ (Λ (up (dimap Φ₂) · v 2 · v 1 ∘ v 0 ∘ up (dimap Φ₁) · v 1 · v 2)))
-\end{code}
-
-For the hole type, the covariant function parameter is ap
-To show that we have constructed a proper functor, we can now give proof of the functor laws. The functor laws are formulated as follows:
-
 %if False
 \begin{code}
 open import Relation.Binary.PropositionalEquality
 open import STLC.Congruence
+\end{code}
+%endif
 
+\begin{code}
 *-Ty : ∀ {Φ τ σ} → just τ ≡ Φ * → ⟦ Φ ⟧Φ σ ≡ τ 
+\end{code}
+
+%if False
+\begin{code}
 *-Ty {Id} ()
 *-Ty {K τ} refl = refl
 *-Ty {Φ₁ ⟶ Φ₂} p with Φ₁ * | inspect (_*) Φ₁ | Φ₂ * | inspect (_*) Φ₂
@@ -85,6 +179,8 @@ open import Data.Product
 int>⊢ : ∀ {Γ τ} → {t : Γ ⊢ τ} → t βη-≡ ! ≡Γrefl , ≡τrefl >⊢ t
 int>⊢ {t = t} = bsym (%≡ !,⊢-id ≡Γrefl ≡τrefl t)
 
+-- Lemma showing that a dimap on a complete functor yields the identity.
+
 *-id : ∀ {Φ τ a b} → (p : just τ ≡ Φ *) 
      → dimap {a} {b} Φ 
      βη-≡ ! ε , ≡τrefl ⇒ ≡τrefl ⇒ ≡τrefl ⇒ *-eq≡τ {Φ} p >⊢ Λ (Λ (up idε))
@@ -92,8 +188,7 @@ int>⊢ {t = t} = bsym (%≡ !,⊢-id ≡Γrefl ≡τrefl t)
 *-id {K τ} refl with ≡τ-eq-refl (≡τtrans ≡τrefl (≡τsym (≡τrefl {τ})))
 ... | x = %Λ (%Λ (%Λ bsym (%≡ cong var (!,∋vz ((ε , (≡τrefl ⇒ ≡τrefl)) , (≡τrefl ⇒ ≡τrefl)) ≡τrefl (≡τtrans ≡τrefl (≡τsym ≡τrefl))))))
 *-id {Φ₁ ⟶ Φ₂} p with *-split {Φ₁} {Φ₂} p
-*-id {Φ₁ ⟶ Φ₂} {.(x ⇒ x')} {a} {b} p | x , (x' , (eq , (eq' , refl))) = 
- 
+*-id {Φ₁ ⟶ Φ₂} {.(x ⇒ x')} {a} {b} p | x , (x' , (eq , (eq' , refl))) =  
   let open Relation.Binary.EqReasoning βηsetoid
           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
   in begin
@@ -113,134 +208,5 @@ int>⊢ {t = t} = bsym (%≡ !,⊢-id ≡Γrefl ≡τrefl t)
      _ ⟷⟨ %Λ (%Λ (%Λ (%Λ (□ %· bsym int>⊢) ⟷ eta))) ⟩
      _ ⟷⟨ %Λ (%Λ (%Λ (%≡ cong (λ v' → ! ≡Γrefl , v' ⇒ *-eq≡τ {Φ₂} eq' >⊢ var vz) (≡τ-eq-eq _ _)))) ⟩
       _ ∎
-
-{-
-*-id {Id} ()
-*-id {K τ} refl = brefl
-*-id {Φ₁ ⟶ Φ₂} p with *-split {Φ₁} {Φ₂} p
-*-id {Φ₁ ⟶ Φ₂} {τ} {a} {b} p | x , (x' , (eq , eq')) =
- let open Relation.Binary.EqReasoning βηsetoid
-          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
-     p-eq2 : _
-     p-eq2 = cong (\v → (a ⇒ b) ⇒ (b ⇒ a) ⇒ ⟦ Φ₂ ⟧Φ b ⇒ v) (*-eq {Φ₂} {x'} {b} {a} eq')
-     p-eq1 : _
-     p-eq1 = cong (\v → (b ⇒ a) ⇒ (a ⇒ b) ⇒ ⟦ Φ₁ ⟧Φ a ⇒ v) (*-eq {Φ₁} {x} {a} {b} eq)
- in begin
-    _ ⟷⟨ %Λ (%Λ (%Λ (%up *-id {Φ₂} {x'} eq' %· □ %· □ %∘ □ %∘ %up *-id {Φ₁} {x} {b} eq %· □ %· □))) ⟩
-    _ ⟷⟨ %Λ (%Λ (%Λ (bsym (%≡ !τ'up p-eq2 _) %· □ %· □ %∘ □ %∘ bsym (%≡ !τ'up p-eq1 _) %· □ %· □))) ⟩
-    Λ
-      (Λ
-       (Λ
-        (Λ (Λ (Λ (var (vs (vs vz)) · (var (vs vz) · var vz)))) ·
-         (Λ (Λ (Λ (var (vs (vs vz)) · (var (vs vz) · var vz)))) ·
-          (!
-           p-eq2
-           >τ' Λ (Λ (Λ (var vz)))
-           · var (vs (vs vz))
-           · var (vs vz))
-          · var vz)
-         ·
-         (!
-          p-eq1
-          >τ' Λ (Λ (Λ (var vz)))
-          · var (vs vz)
-          · var (vs (vs vz)))))) ⟷⟨ {!!} ⟩
-    _ ⟷⟨ {!!} ⟩
-    _ ∎
--}
-{-
-
-*-id' : ∀ {Γ Φ τ a} → {ab re : ε ⊢ a ⇒ a} → (p : just τ ≡ Φ *) 
-      → (t : Γ ⊢ ⟦ Φ ⟧Φ a) → up (dimap Φ · ab · re) · t βη-≡ t
-*-id' {Γ} {Φ} {τ} {a} p t =
-  let open Relation.Binary.EqReasoning βηsetoid
-          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
-  in begin
-     _ ⟷⟨ %up (*-id {Φ} {τ} {a} p %· □ %· □) %· □ ⟩
-     _ ⟷⟨ %up_ {_} {_} {_} {Λ (var vz)} (β≡ brefl) %· □ ⟩
-     _ ⟷⟨ (%≡ up-/sz _ %· □) ⟷ β≡ brefl ⟩
-     _ ∎
--}
-
-do-dimap : ∀ {Φ₁ Φ₂ a b} → (f1 : ε ⊢ a ⇒ b) → (f2 : ε ⊢ b ⇒ a) 
-         → dimap (Φ₁ ⟶ Φ₂) · f1 · f2 βη-≡ Λ (up (dimap Φ₂ · f1 · f2) ∘ v 0 ∘ up (dimap Φ₁ · f2 · f1))
-do-dimap {Φ₁} {Φ₂} f1 f2 =
-    let open Relation.Binary.EqReasoning βηsetoid
-          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
-    in begin
-       _ ⟷⟨ beta %· □ ⟩
---       _ ⟷⟨ %Λ (%Λ (□ %· !upw-up f1 %· □ %∘ □ %∘ □ %· □ %· !upw-up f1)) %· □ ⟩
-       _ ⟷⟨ %Λ (%Λ (!up/ (dimap Φ₂) (ss (ss (ss sz (up f1)) (v 1)) (v 0)) %· □ %· □ %∘ □ %∘ !up/ (dimap Φ₁) (ss (ss (ss sz (up f1)) (v 1)) (v 0)) %· □ %· □)) %· □ ⟩
-       _ ⟷⟨ beta ⟩
---       _ ⟷⟨ %Λ (□ %· □ %· !upw-up f2 %∘ □ %∘ □ %· !upw-up f2 %· □) ⟩
-       _ ⟷⟨ %Λ (!up/ (dimap Φ₂ · f1) (ss (ss sz (wkTm vz f2)) (v 0)) %· □ %∘ □ %∘ !up/ (dimap Φ₁) (ss (ss sz (wkTm vz f2)) (v 0)) %· □ %· !up/ f1 (ss (ss sz (wkTm vz f2)) (v 0))) ⟩
-       _ ∎
-
-do-dimap' : ∀ {Φ₁ Φ₂ a b Γ} → (f1 : ε ⊢ a ⇒ b) → (f2 : ε ⊢ b ⇒ a) → (e : Γ ⊢ ⟦ Φ₁ ⟶ Φ₂ ⟧Φ b)
-         → up (dimap (Φ₁ ⟶ Φ₂) · f1 · f2) · e βη-≡ up (dimap Φ₂ · f1 · f2) ∘ e ∘ up (dimap Φ₁ · f2 · f1)
-do-dimap' {Φ₁} {Φ₂} f1 f2 e =
-    let open Relation.Binary.EqReasoning βηsetoid
-          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
-    in begin
-       _ ⟷⟨ %up do-dimap {Φ₁} {Φ₂} f1 f2 %· □ ⟩
-       _ ⟷⟨ %≡ up-/sz _ %· □ ⟩
-       _ ⟷⟨ %Λ (□ %· (□ %· %≡ wk-ext/ vz (dimap Φ₂ · f1 · f2) _ _ %· □) %· %≡ wk-ext/ vz (dimap Φ₁ · f2 · f1) _ _) %· □ ⟩
-       _ ⟷⟨ beta ⟩
-       _ ⟷⟨ bsym (%≡ up-/sz _) %· (bsym (%≡ up-/sz _) %· □ %· □) %· □ ⟩
-       _ ⟷⟨ %≡ comm-/-/=> (dimap Φ₂ · f1 · f2) _ _ %∘ □ %∘ %≡ comm-/-/=> (dimap Φ₁ · f2 · f1) _ _ ⟩
-       _ ⟷⟨ bsym (%≡ up-/sz _) %∘ □ %∘ bsym (%≡ up-/sz _) ⟩
-       _ ∎
-\end{code}
-%endif
-
-\begin{code}
-dimapid : ∀ {τ} → (Φ : Functor) → dimap {τ} {τ} Φ · id · id βη-≡ id
-\end{code}
-
-%if False
-\begin{code}
-dimapid Id = β≡ brefl 
-dimapid (K τ) = β≡ brefl
-dimapid {a} (Φ₁ ⟶ Φ₂) =
-    let open Relation.Binary.EqReasoning βηsetoid
-          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
-    in begin
-       _ ⟷⟨ do-dimap {Φ₁} {Φ₂} id id ⟩
-       _ ⟷⟨ %Λ (%up dimapid Φ₂ %∘ □ %∘ %up dimapid Φ₁) ⟩
-       _ ⟷⟨ β≡ (β≡ (β≡ (%Λ eta))) ⟩
-       _ ∎
-
-\end{code}
-%endif
-
-\begin{code}
-dimapcomp : ∀ {τ₁ τ₂ τ₃} → (Φ : Functor) 
-                → (f1 : ε ⊢ τ₃ ⇒ τ₂) → (f2 : ε ⊢ τ₂ ⇒ τ₃) 
-                → (g1 : ε ⊢ τ₂ ⇒ τ₁) →  (g2 : ε ⊢ τ₁ ⇒ τ₂) 
-                →     dimap Φ · f1 · f2 ∘ dimap Φ · g1 · g2
-                βη-≡  dimap Φ · (g1 ∘ f1) · (f2 ∘ g2)
-\end{code}
-
-%if False
-\begin{code}
-dimapcomp Id f1 f2 g1 g2 = β≡ brefl
-dimapcomp (K τ) f1 f2 g1 g2 = β≡ (β≡ brefl)
-dimapcomp (Φ₁ ⟶ Φ₂) f1 f2 g1 g2 =
-    let open Relation.Binary.EqReasoning βηsetoid
-          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
-    in begin
-       _ ⟷⟨ do-dimap {Φ₁} {Φ₂} f1 f2 %∘ do-dimap {Φ₁} {Φ₂} g1 g2 ⟩
-       _ ⟷⟨ bsym eta ⟩
-       _ ⟷⟨ %Λ do-comp _ _ _ ⟩
-       _ ⟷⟨ %Λ beta ⟩
-       _ ⟷⟨ %Λ (%≡ wk-ext/ (vs vz) (up (dimap Φ₂ · f1 · f2)) (v 0) (ss sz _) %∘ □ %∘ %≡ wk-ext/ (vs vz) (up (dimap Φ₁ · f2 · f1)) (v 0) (ss sz _)) ⟩
-       _ ⟷⟨ %Λ (!up/ _ (ss sz _) %∘ beta %∘ !up/ _ (ss sz _)) ⟩
-       _ ⟷⟨ %Λ (□ %∘ (%≡ wk-ext/ (vs vz) (up (dimap Φ₂ · g1 · g2)) (v 0) (ss sz _) %∘ □ %∘ %≡ wk-ext/ (vs vz) (up (dimap Φ₁ · g2 · g1)) (v 0) (ss sz _)) %∘ □) ⟩
-       _ ⟷⟨ %Λ (□ %∘ (!up/ (dimap Φ₂ · g1 · g2) (ss sz _) %∘ □ %∘ !up/ (dimap Φ₁ · g2 · g1) (ss sz _)) %∘ □) ⟩
-       _ ⟷⟨ %Λ (bsym (comp-assoc _ _ _) ⟷ ((□ %∘ bsym (comp-assoc _ _ _)) ⟷ comp-assoc _ _ _) ⟷ (comp-assoc _ _ _ %∘ □)) ⟩
-       _ ⟷⟨ %Λ (%up dimapcomp Φ₂ f1 f2 g1 g2 %∘ □ %∘ %up dimapcomp Φ₁ g2 g1 f2 f1) ⟩
-       _ ⟷⟨ bsym (do-dimap {Φ₁} {Φ₂} (g1 ∘ f1) (f2 ∘ g2)) ⟩
-       _ ∎
-
 \end{code}
 %endif

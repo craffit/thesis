@@ -72,7 +72,7 @@ open import STLC.Congruence
    in begin
       _ ⟷⟨ cong-extS vz (cong-wkS vz (θ'ι eq)) (%up (*-id' {Φ} eq' _ _) %· □) ⟩
       _ ⟷⟨ cong-extS vz (=>sym (=>≡ (!,=>wkSvz ≡Γrefl _ (*-eq≡τ {Φ} {t} {a} eq') _))) (bsym (%≡ !,⊢up (*Γ-eq {φ} {g} {a} eq , ≡τrefl) (≡τrefl ⇒ *-eq≡τ {Φ} eq') (Λ (var vz))) %· %≡ cong var (sym (!,∋vz (*Γ-eq eq) ≡τrefl ≡τrefl))) ⟩
-      _ ⟷⟨ cong-extS vz =>refl (cong-!>⊢ (*Γ-eq eq , ≡τrefl) (*-eq≡τ {Φ} eq') _ _ (id-id (var vz))) ⟩
+      _ ⟷⟨ cong-extS vz =>refl (cong-!>⊢ (*Γ-eq eq , ≡τrefl) (*-eq≡τ {Φ} eq') _ _ (up-id-id (var vz))) ⟩
       _  ⟷⟨ cong-extS vz =>refl (%≡ cong var (!,∋vz-flip (*Γ-eq eq) (*-eq≡τ {Φ} eq'))) ⟩
       _  ⟷⟨ cong-extS vz =>refl (%≡ cong (λ v' → ! (*Γ-eq {φ} {g} {a} eq , v') , ≡τrefl {⟦ Φ ⟧Φ a} >⊢ var vz) (≡τ-eq-eq _ _)) ⟩
       _ ∎

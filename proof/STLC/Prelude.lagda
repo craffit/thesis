@@ -50,7 +50,7 @@ do-comp f2 f1 a =
     let open Relation.Binary.EqReasoning βηsetoid
           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_ ; _≡⟨_⟩_ to _β⟨_⟩_)
     in begin
-    _ ⟷⟨ ((%≡ up-/sz _ %· □) ⟷ beta) %· □ %· □ ⟩
+    _ ⟷⟨ beta %· □ %· □ ⟩
     _ ⟷⟨ beta ⟷ %Λ (%≡ wk-ext/ vz (wkTm vz f2) _ _ ⟷ (%≡ wk-ext/ vz f2 _ _ ⟷ %≡ wkS-ι vz f2) %· □) %· □ ⟩
     _ ⟷⟨ beta ⟷ ((%≡ wk-ext/ vz f2 _ _ ⟷ %≡ /ι f2) %· (%≡ wk-ext/ vz f1 _ _ ⟷ %≡ /ι f1 %· □)) ⟩
     _ ∎
@@ -77,14 +77,17 @@ comp-assoc f3 f2 f1 =
      _ ∎
 
 id-id : ∀ {Γ τ} → (t : Γ ⊢ τ) → id · t βη-≡ t
-id-id t = (%≡ up-/sz _ %· □) ⟷ beta
+id-id t = beta
+
+up-id-id : ∀ {Γ τ} → (t : Γ ⊢ τ) → up id · t βη-≡ t
+up-id-id t = (%≡ up-/sz _ %· □) ⟷ beta
 
 up-comp : ∀ {a b c Γ} → (f2 : ε ⊢ b ⇒ c) → (f1 : ε ⊢ a ⇒ b) → up f2 ∘ up f1 βη-≡ up {Γ} (f2 ∘ f1)
-up-comp f2 f1 =
-   let open Relation.Binary.EqReasoning βηsetoid
+up-comp f2 f1 = 
+  let open Relation.Binary.EqReasoning βηsetoid
           renaming (_≈⟨_⟩_ to _⟷⟨_⟩_ ; _≡⟨_⟩_ to _β⟨_⟩_)
   in begin
-     _ ⟷⟨ %≡ up-/sz _ %· %≡ up-/sz _ %· %≡ up-/sz _ ⟩
+     _ ⟷⟨ □ %· %≡ up-/sz _ %· %≡ up-/sz _ ⟩
      _ ⟷⟨ bsym (%≡ up-/sz _) ⟩
      _ ∎
 
@@ -95,7 +98,7 @@ id-comp f =
   in begin
      _ ⟷⟨ bsym eta ⟩
      _ ⟷⟨ %Λ do-comp _ _ _ ⟩
-     _ ⟷⟨ %Λ id-id _ ⟩
+     _ ⟷⟨ %Λ beta ⟩
      _ ⟷⟨ eta ⟩
      _ ∎
 
@@ -106,7 +109,7 @@ comp-id f =
   in begin
      _ ⟷⟨ bsym eta ⟩
      _ ⟷⟨ %Λ do-comp _ _ _ ⟩
-     _ ⟷⟨ %Λ (□ %· id-id _) ⟩
+     _ ⟷⟨ %Λ (□ %· beta) ⟩
      _ ⟷⟨ eta ⟩
      _ ∎
 
