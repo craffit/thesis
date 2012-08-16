@@ -69,7 +69,7 @@ module Proof  (rep-abs : (abs ∘ rep) βη-≡ id) (abs-rep : ∀ {φ e e'} →
          _ ⟷⟨ up-comp _ _ %· □ ⟩
          _ ⟷⟨ %up dimapcomp Φ _ _ _ _ %· □ ⟩
          _ ⟷⟨ %up ((□ %· rep-abs %· rep-abs) ⟷ dimapid Φ) %· □ ⟩
-         _ ⟷⟨ id-id _ ⟩
+         _ ⟷⟨ up-id-id _ ⟩
          _ ∎
   tts-prop (app {φ} {Φ₁} {Φ₂} {e₁} {e₁'} {e₂} {e₂'} y y') =
       let open Relation.Binary.EqReasoning βηsetoid
@@ -95,7 +95,6 @@ module Proof  (rep-abs : (abs ∘ rep) βη-≡ id) (abs-rep : ∀ {φ e e'} →
          _ ⟷⟨ beta ⟩
          _ ⟷⟨ □ %· (□ %· !up/ _ (ss ι _) %· □) %· !up/ _ (ss ι _) ⟩
          _ ⟷⟨ bsym eta ⟩
-         _ ⟷⟨ %Λ (%≡ sym (up-/sz comp) %· (%≡ sym (up-/sz comp) %· □ %· □) %· □ %· □) ⟩
          _ ⟷⟨ %Λ (do-comp _ _ _ ⟷ do-comp _ _ _) ⟩
          _ ⟷⟨ %Λ (bsym (!up/ _ (ss (wkS vz (θ φ)) _)) %· beta) ⟩
          _ ⟷⟨ %Λ (□ %· (%≡ wk-ext/ (vs vz) (e' / ss (wkS vz (θ φ)) (var vz)) (var vz) (ss (wkS vz ι) (wkTm vz (up (dimap Φ₁ · abs · rep)) · var vz)))) ⟩
@@ -132,7 +131,7 @@ module Proof  (rep-abs : (abs ∘ rep) βη-≡ id) (abs-rep : ∀ {φ e e'} →
           _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (cong/ (%≡ !,⊢-id (≡Γsym ≡Γrefl) ≡τrefl (up (! ε , ≡τrefl ⇒ *-eq≡τ {Φ} p' >⊢ idε) · e')) ι) ⟩
           _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (%≡ /ι (up (! ε , ≡τrefl ⇒ *-eq≡τ {Φ} p' >⊢ idε) · e')) ⟩
           _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (bsym (%≡ !,⊢up ≡Γrefl _ (Λ (var vz))) %· int>⊢) ⟩
-          _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (cong-!>⊢ ≡Γrefl (*-eq≡τ {Φ} p') _ _ (id-id e')) ⟩
+          _ ⟷⟨ cong-!>⊢ (*Γ-eq {φ} p) ≡τrefl _ _ (cong-!>⊢ ≡Γrefl (*-eq≡τ {Φ} p') _ _ (up-id-id e')) ⟩
           _ ⟷⟨ %≡ !,⊢-comm-trans _ _ _ _ _ ⟩
           _ ⟷⟨ %≡ cong₂ (λ v' v0 → ! v' , v0 >⊢ e') (≡Γ-eq-eq _ _) (≡τ-eq-eq _ _) ⟩
           _ ∎
