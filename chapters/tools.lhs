@@ -3,13 +3,13 @@ A functor can be seen as a function on types. It takes as parameter a type and y
 new type based on its argument. Associated with a type level functor is a term level functor which 
 lifts functions on the type parameter to functions on the functor:
 
-> type F a                          --Functor
-> fmap :: (a -> b) -> F a -> F b    --term level functor
+> type F a
+> fmap :: (a -> b) -> F a -> F b
 
 For |fmap| to be a proper term-level functor it has to obey the functor laws:
 
-> fmap id = id                              --Identity
-> fmap g `comp` fmap f = fmap (g `comp` f)  --Composition
+> fmap id = id
+> fmap g `comp` fmap f = fmap (g `comp` f)
 
 A list is an example of a Functor in Haskell:
 
@@ -46,8 +46,4 @@ using the following type-indexed function:
 > dimap_Id    rep abs x = abs x
 > dimap_T     rep abs x = x
 > dimap_F1F2  rep abs f = dimap_F2 rep abs `comp` f `comp` dimap_F1 abs rep
-
-\section{Retractions}
-
-\section{Equational Reasoning}
 

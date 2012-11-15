@@ -42,6 +42,15 @@ dimap (Φ₁ ⟶ Φ₂)  = Λ (Λ (Λ (up (dimap Φ₂) · v 2 · v 1 ∘ v 0 �
 %if False
 \begin{code}
 -- Helper function to expand the definition of dimap
+dimap-const : ∀ {Γ a b σ} → (ab : ε ⊢ a ⇒ b) → (re : ε ⊢ b ⇒ a) → (v : Γ ⊢ σ)
+            → up (dimap (K σ) · ab · re) · v βη-≡ v
+dimap-const ab re v =
+  let open Relation.Binary.EqReasoning βηsetoid
+          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+  in begin
+     _ ⟷⟨ %up β≡ brefl %· □ ⟩
+     _ ⟷⟨ up-id-id v ⟩
+     _ ∎
 
 do-dimap : ∀ {Φ₁ Φ₂ a b} → (f1 : ε ⊢ a ⇒ b) → (f2 : ε ⊢ b ⇒ a) 
          → dimap (Φ₁ ⟶ Φ₂) · f1 · f2 βη-≡ Λ (up (dimap Φ₂ · f1 · f2) ∘ v 0 ∘ up (dimap Φ₁ · f2 · f1))
@@ -180,7 +189,7 @@ int>⊢ : ∀ {Γ τ} → {t : Γ ⊢ τ} → t βη-≡ ! ≡Γrefl , ≡τrefl
 int>⊢ {t = t} = bsym (%≡ !,⊢-id ≡Γrefl ≡τrefl t)
 
 -- Lemma showing that a dimap on a complete functor yields the identity.
-
+{-
 *-id : ∀ {Φ τ a b} → (p : just τ ≡ Φ *) 
      → dimap {a} {b} Φ 
      βη-≡ ! ε , ≡τrefl ⇒ ≡τrefl ⇒ ≡τrefl ⇒ *-eq≡τ {Φ} p >⊢ Λ (Λ (up idε))
@@ -208,5 +217,6 @@ int>⊢ {t = t} = bsym (%≡ !,⊢-id ≡Γrefl ≡τrefl t)
      _ ⟷⟨ %Λ (%Λ (%Λ (%Λ (□ %· bsym int>⊢) ⟷ eta))) ⟩
      _ ⟷⟨ %Λ (%Λ (%Λ (%≡ cong (λ v' → ! ≡Γrefl , v' ⇒ *-eq≡τ {Φ₂} eq' >⊢ var vz) (≡τ-eq-eq _ _)))) ⟩
       _ ∎
+-}
 \end{code}
 %endif

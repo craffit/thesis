@@ -1,5 +1,48 @@
+%format (hole(x)) = "\mathring{" x "}"
+
 %format rep = "\textbf{rep}"
 %format abs = "\textbf{abs}"
 
+%format (rep_(x)) = "\textbf{rep}_{" x "}"
+%format (abs_(x)) = "\textbf{abs}_{" x "}"
+
 %format tyA = "\mathfrak{A}"
 %format tyR = "\mathfrak{R}"
+%format tyI = "\iota"
+
+%format `rw`   = "\rightsquigarrow "
+%format `nrw`  = "\mathbin{\overlay\diagup\rightsquigarrow} "
+
+%format ty = "\tau "
+%format (ty_(x)) ="\tau_{" x "}"
+
+%format tyF = "\mathring{\tau}"
+%format (tyF_(x)) = "\mathring{\tau}_{" x "}"
+
+%format pC = "\mathfrak{C} "
+
+%format env = "\Gamma "
+%format (env_(x)) = "\Gamma{" x "}"
+%format envF = "\mathring{\Gamma}"
+%format (envF_(x)) = "\mathring{" x "}"
+
+%format (int(x)) = "\llbracket " x "\rrbracket"
+%format (int_(x)(y)) = "\llbracket " x "\rrbracket_{" y "}"
+
+%format `stlc`    = "\vdash_{\lambda}"
+%format stlc      = "\lambda " 
+%format (TTS(x)) = "TTS_{" x "}"
+
+%format dimap = "dimap"
+%format fmap = "fmap"
+
+%format (dimap_(x)) = "dimap_{" x "}"
+%format (fmap_(x)) = "fmap_{" x "}"
+%format (sub_(x))  = "\theta_{" x "}"
+
+%format `beq`    = "\:\equiv_{\beta\eta}\:"
+
+%format `ret`  = "\vartriangleleft "
+%format `iso`  = "\cong "
+
+%format (eval(x)) = x "\downarrow"

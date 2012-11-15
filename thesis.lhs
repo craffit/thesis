@@ -41,12 +41,20 @@
 % For \inferrule
 \usepackage{mathpartir}
 
+\usepackage{float}
+
+\usepackage{overlay}
+
+\usepackage{rotating}
 % Theorems
 \usepackage{ntheorem}
 \theoremstyle{break}
 \theorembodyfont{\normalfont}
 \newtheorem{defn}{Definition}
+\newtheorem{prop}{Property}
 \newtheorem{thrm}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proof}{Proof}
 \newtheorem{law}{Law}
 
 \begin{document}
@@ -59,14 +67,14 @@
 \chapter{TTS System}
 %include chapters/tts.lhs
 
-\chapter{Tools of the Trade}
-%include chapters/tools.lhs
-
 \chapter{Proof}
 %include chapters/proof.lhs
 
 \chapter{Mechanical Proof}
-%include chapters/mechanical.lagda
+%%include chapters/mechanical.lagda
+
+\chapter{Extensions to the TTS system}
+%include chapters/ttse.lhs
 
 \chapter{Conclusion}
 %include chapters/conclusion.lhs

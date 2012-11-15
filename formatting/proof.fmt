@@ -111,7 +111,7 @@
 %format `rew`   = "\vdash_{rew}"
 %format `ty`    = "\vdash_{ty}"
 
-%format env     = "\rho "
+%format env     = "\Gamma "
 
 %format t_a     ="t_a"
 %format t_r     ="t_r"
@@ -123,6 +123,7 @@
 %format />      ="\rrbracket"
 
 %format ty       ="\tau"
+%format (ty_(x)) ="\tau{" x "}"
 %format tyl      ="\vec{\tau}"
 %format ty_1     ="\tau_1"
 %format ty_2     ="\tau_2"
@@ -189,7 +190,7 @@
 
 %format sig'     =sig prime
 
-%format sub     ="\theta"
+
 %format sub_f    ="\theta_f"
 %format sub_a    ="\theta_a"
 %format sub_r    ="\theta_r"
@@ -199,27 +200,27 @@
 %format sub_1    ="\theta_1"
 %format sub_2    ="\theta_2"
 
-%format sub'     =sub prime
-%format sub_f'   =sub_f prime
-%format sub_a'   =sub_a prime
-%format sub_r'   =sub_r prime
-%format sub_s'   =sub_s prime
-%format sub_x'   =sub_x prime
-%format sub_e'   =sub_e prime
-%format sub_1'   =sub_1 prime
-%format sub_2'   =sub_2 prime
+%%format sub'     =sub prime
+%%format sub_f'   =sub_f prime
+%%format sub_a'   =sub_a prime
+%%format sub_r'   =sub_r prime
+%%format sub_s'   =sub_s prime
+%%format sub_x'   =sub_x prime
+%%format sub_e'   =sub_e prime
+%%format sub_1'   =sub_1 prime
+%%format sub_2'   =sub_2 prime
 
-%format sub_gf    = "\theta_{\Gamma, x : \Phi}"
-%format sub_gfa   = "\theta_{\Gamma, x : \Phi_a}"
-%format sub_empty = "\theta_{\emptyset} "
-%format sub_G     = "\theta_{\Gamma}"
-%format sub_P    ="\theta_{\Theta}"
-%format sub_Ps   ="\theta_{\Theta s}"
-%format sub_Pr   ="\theta_{\Theta r}"
-%format sub_Px   ="\theta_{\Theta x}"
-%format sub_P1   ="\theta_{\Theta 1}"
-%format sub_P2   ="\theta_{\Theta 2}"
-%format sub_2    ="\theta_2"
+%%format sub_gf    = "\theta_{\Gamma, x : \Phi}"
+%%format sub_gfa   = "\theta_{\Gamma, x : \Phi_a}"
+%%format sub_empty = "\theta_{\emptyset} "
+%%format sub_G     = "\theta_{\Gamma}"
+%%format sub_P    ="\theta_{\Theta}"
+%%format sub_Ps   ="\theta_{\Theta s}"
+%%format sub_Pr   ="\theta_{\Theta r}"
+%%format sub_Px   ="\theta_{\Theta x}"
+%%format sub_P1   ="\theta_{\Theta 1}"
+%%format sub_P2   ="\theta_{\Theta 2}"
+%%format sub_2    ="\theta_2"
 
 %format Sub      ="\Theta"
 %format Sub_1    ="\Theta_1"

@@ -4,6 +4,7 @@
 module STLC.Variables where
 
 open import STLC.Base
+
 open import Relation.Nullary.Decidable
 
 open import Data.Nat

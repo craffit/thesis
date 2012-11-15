@@ -60,7 +60,23 @@ data _∋↝_ : Ftx → Functor → Set where
 ⟦_⟧∋ : ∀ {φ Φ} → (v : φ ∋↝ Φ) → (a : Ty) → ⟦ φ ⟧Γ a ∋ ⟦ Φ ⟧Φ a
 ⟦ vz    ⟧∋ t = vz
 ⟦ vs y  ⟧∋ t = vs (⟦ y ⟧∋ t)    
+\end{code}
 
+\begin{code}
+mapΦ : ∀ {φ Γ a b} → (ab : ε ⊢ b ⇒ a) → (re : ε ⊢ a ⇒ b) → ⟦ φ ⟧Γ a => Γ → ⟦ φ ⟧Γ b => Γ
+mapΦ {ε} ab re sz = sz
+mapΦ {φ , Φ} ab re (ss y y') = ss (mapΦ ab re y) (up (dimap Φ · ab · re) · y')
+
+lookup-mapΦ : ∀ {φ Φ Γ a b} → (v : φ ∋↝ Φ) → (ab : ε ⊢ b ⇒ a) → (re : ε ⊢ a ⇒ b) → (s : ⟦ φ ⟧Γ a => Γ) → lookup (⟦ v ⟧∋ b) (mapΦ ab re s) ≡ up (dimap Φ · ab · re) · lookup (⟦ v ⟧∋ a) s
+lookup-mapΦ vz ab re (ss y y') = refl
+lookup-mapΦ (vs y) ab re (ss y' y0) = lookup-mapΦ y ab re y'
+
+comm-wkS-mapΦ : ∀ {φ Γ τ a b} → (ab : ε ⊢ b ⇒ a) → (re : ε ⊢ a ⇒ b) 
+          → (v : Γ ∋ τ) → (s : ⟦ φ ⟧Γ a => Γ - v)
+          → wkS v (mapΦ ab re s) ≡ mapΦ ab re (wkS v s)
+comm-wkS-mapΦ {ε} ab re v sz = refl
+comm-wkS-mapΦ {φ , Φ} ab re v (ss y y') = cong₂ (λ eq' eq0 → ss eq' (eq0 · wkTm v y'))
+                                            (comm-wkS-mapΦ ab re v y) (wk-up _ _)
 
 \end{code}
 
@@ -70,19 +86,27 @@ _-↝_ : {Φ : Functor} → (φ : Ftx) → φ ∋↝ Φ → Ftx
 (φ , Φ) -↝ vz     = φ
 (φ , Φ) -↝ (vs x) = (φ -↝ x) , Φ
 
-wkv↝ : ∀ {φ Φ Φ'} → (x : φ ∋↝ Φ') → φ -↝ x ∋↝ Φ → φ ∋↝ Φ
-wkv↝ vz     y       = vs y
-wkv↝ (vs x) vz      = vz
-wkv↝ (vs x) (vs y)  = vs (wkv↝ x y)
+wkv∋↝ : ∀ {φ Φ Φ'} → (x : φ ∋↝ Φ') → φ -↝ x ∋↝ Φ → φ ∋↝ Φ
+wkv∋↝ vz     y       = vs y
+wkv∋↝ (vs x) vz      = vz
+wkv∋↝ (vs x) (vs y)  = vs (wkv∋↝ x y)
 
 -↝dist≡ :  ∀ {φ Φ} → (x : φ ∋↝ Φ) → Ty → Set
--↝dist≡ {φ} x τ = ⟦ φ -↝ x ⟧Γ τ ≡ ⟦ φ ⟧Γ τ - ⟦ x ⟧∋ τ
+-↝dist≡ {φ} x τ = ⟦ φ -↝ x ⟧Γ τ ≡Γ ⟦ φ ⟧Γ τ - ⟦ x ⟧∋ τ
 
 substV-eq : ∀ {φ Φ τ} → (x : φ ∋↝ Φ) → -↝dist≡ x τ
-substV-eq vz = refl
-substV-eq {φ , Φ₂} {Φ} {τ} (vs y) = cong (λ v' → v' , ⟦ Φ₂ ⟧Φ τ) (substV-eq y)
+substV-eq vz = ≡Γrefl
+substV-eq {φ , Φ₂} {Φ} {τ} (vs y) = substV-eq y , ≡τrefl
 
-wkTm↝ : ∀ {φ Φ Φ' τ} → (x : φ ∋↝ Φ') → ⟦ φ -↝ x ⟧Γ τ ⊢ ⟦ Φ ⟧Φ τ → ⟦ φ ⟧Γ τ ⊢ ⟦ Φ ⟧Φ τ
-wkTm↝ {τ = τ} x t = wkTm (⟦ x ⟧∋ τ) (! substV-eq x >₁ t)
+wkTm↝ : ∀ {φ Φ τ σ} → (x : φ ∋↝ Φ) → ⟦ φ -↝ x ⟧Γ τ ⊢ σ → ⟦ φ ⟧Γ τ ⊢ σ
+wkTm↝ {τ = τ} x t = wkTm (⟦ x ⟧∋ τ) (! substV-eq x , ≡τrefl >⊢ t)
 
+wkv↝ : ∀ {φ Φ τ σ} → (x : φ ∋↝ Φ) → ⟦ φ -↝ x ⟧Γ τ ∋ σ → ⟦ φ ⟧Γ τ ∋ σ
+wkv↝ {τ = τ} x t = wkv (⟦ x ⟧∋ τ) (! substV-eq x , ≡τrefl >∋ t)
+
+wkv∋↝-eq : ∀ {φ Φ Φ' a} → (v : φ ∋↝ Φ') → (v' : φ -↝ v ∋↝ Φ)
+     → ⟦ wkv∋↝ v v' ⟧∋ a ≡ wkv (⟦ v ⟧∋ a) (! substV-eq v , ≡τrefl >∋ ⟦ v' ⟧∋ a)
+wkv∋↝-eq vz v' = cong vs (sym (!,∋-id ≡Γrefl ≡τrefl (⟦ v' ⟧∋ _)))
+wkv∋↝-eq (vs y) vz = cong (wkv (vs (⟦ y ⟧∋ _))) (sym (!,∋vz (substV-eq y) ≡τrefl ≡τrefl))
+wkv∋↝-eq (vs y) (vs y') = cong vs (wkv∋↝-eq y y')
 \end{code}
