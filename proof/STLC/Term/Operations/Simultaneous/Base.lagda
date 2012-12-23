@@ -16,8 +16,8 @@ infixl 9 _/=>_
 \end{code}
 %endif
 
-\subsection{Simultaneous substitution}
-The STLC implementation of Keller and Altenkirch makes use of single substitution to implement evaluation and $\beta\eta$-equality. For our purpose we also require simultaneous substitution. Simultaneous substitution is a substitution technique in which all free variables in a term are replaced, at once, with terms belonging to an entirely new context. This is defined as follows:
+\paragraph{Simultaneous substitution}
+Reductions in the simply typed lambda calculus are based upon substitution. A variant of substitutions that goes very well with the well-typed de Bruijn formulation of the lambda calulus are simultaneous substitutions. Simultaneous substitution is an operation in which all free variables in a term are substituted, at once, with terms belonging to an entirely new context. Such a substitution is defined as follows:
 
 \begin{code}
 
@@ -27,10 +27,9 @@ data _=>_ : Con → Con → Set where
 
 \end{code}
 
-The substitution type is indexed by two type contexts. The first type context represents the free variables that will be replaced and the second type context represents the new type context after substitution. This new type context is the type context for all substituted terms.
+The substitution type is indexed by two typing contexts. The first type context represents the free variables that will be replaced and the second type context represents the new typing context after substitution. This new typing context is the typing context for all substituted terms.
 
-
-Before defining the function which will perform the actual substitution on terms, we need some auxiliary functions to manipulate simultaneous substitutions.
+Before defining the function which will perform the actual substitution on terms, it is necessary to extend to concept of term weakening (opening up a free variable) to simultaneous substitutions. This is done by the following functions:
 
 \begin{code}
 
@@ -42,7 +41,7 @@ extS : ∀ {τ Γ Δ} → (x : Γ ∋ τ) → (t : Δ ⊢ τ) → Γ - x => Δ �
 extS vz t s               = ss s t
 extS (vs y) t (ss y' y0)  = ss (extS y t y') y0
 
-wkExtS : {Γ Δ : Con} {τ : Ty} → (x : Γ ∋ τ) → (y : Δ ∋ τ) 
+wkExtS : {Γ Δ : Con} {τ : Ty} → (x : Γ ∋ τ) → (y : Δ ∋ τ)
       → Γ - x => Δ - y → Γ => Δ
 wkExtS x y v = extS x (var y) (wkS y v)
 \end{code}
@@ -50,8 +49,7 @@ wkExtS x y v = extS x (var y) (wkS y v)
 The |wkS| function weakens the result context of a substitution, the |extS| function extends a substitution such that it replaces an extra free variable with a term. |wkExtS| is defined for convenience to create a 'gap' in a substitution. This function adds a new free variable to a substitution which will be replaced by another newly created variable.
 
 
-
-The substitution function |_/_| can now be defined in the following way, with use of helper function lookup. |lookup| retrieves the term at some variable index from a substitution.
+The substitution function |_/_| can now be defined in the following way, with use of helper function |lookup|. |lookup| retrieves the term at some variable index from a substitution.
 
 \begin{code}
 lookup : ∀ {Γ Δ τ} → (v : Γ ∋ τ) → Γ => Δ → Δ ⊢ τ
@@ -75,20 +73,21 @@ sz       /=> s' = sz
 ss y y'  /=> s' = ss (y /=> s') (y' / s')
 \end{code}
 
-      
-\paragraph{Single substitution} Single substitution can be implemented using simultaneous substitution. Single substitution is needed in order to be able to implement $\beta$-reduction. A single substitution is created by extending the identity substitution with one free variable and a term.
+
+\paragraph{Single substitution} Single substitution can be implemented using simultaneous substitution. Single substitution is needed in order to be able to implement $\beta$-reduction. A single substitution is created by extending the identity substitution with a term for one variable.
 
 \begin{code}
 
-ι : ∀ {Γ} → Γ => Γ
-ι {ε}       = sz
-ι {y , y'}  = wkExtS vz vz (ι {y})
+I : ∀ {Γ} → Γ => Γ
+I {ε}       = sz
+I {y , y'}  = wkExtS vz vz (I {y})
 
 sub : ∀ {Γ τ} → (v : Γ ∋ τ) → (x : Γ - v ⊢ τ) → Γ => Γ - v
-sub v x = extS v x ι
+sub v x = extS v x I
 
 \end{code}
 
+%if False
 \begin{code}
 
 open import Relation.Binary.PropositionalEquality
@@ -103,7 +102,7 @@ open import Relation.Binary.PropositionalEquality
       → extS x t s ≡ extS x t' s'
 ≡extS _ refl refl = refl
 
-≡lookup : ∀ {Γ Δ τ} {v v' : Γ ∋ τ} {s s' : Γ => Δ} → v ≡ v' → s ≡ s' 
+≡lookup : ∀ {Γ Δ τ} {v v' : Γ ∋ τ} {s s' : Γ => Δ} → v ≡ v' → s ≡ s'
         → lookup v s ≡ lookup v' s'
 ≡lookup refl refl = refl
 

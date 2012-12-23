@@ -1,3 +1,4 @@
+%if False
 \begin{code}
 
 module STLC.Types.Base where
@@ -8,10 +9,19 @@ open import Relation.Binary.PropositionalEquality
 infixr 6 _⇒_ 
 infixr 6 _≡⇒_ 
 
+\end{code}
+%endif
+
+\begin{code}
+
 data Ty : Set where
   C    : ℕ → Ty
   _⇒_  : Ty → Ty → Ty
 
+\end{code}
+
+%if False
+\begin{code}
 ≡C : ∀ {a b} → a ≡ b → C a ≡ C b
 ≡C = cong C
 
@@ -28,3 +38,4 @@ inj-C refl = refl
 ⇒-inj-right refl = refl 
 
 \end{code}
+%endif

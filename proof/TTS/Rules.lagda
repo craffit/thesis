@@ -13,10 +13,9 @@ open import TTS.Context.Base
 open import Util.PropositionalEquality
 
 data Rules : Set where
-  ε    : Rules
-  replace : ∀ {Φ} → (r : Rules) → (e : ε ⊢ ⟦ Φ ⟧Φ (C A))
-          → (e' : ε ⊢ ⟦ Φ ⟧Φ R) → rel {ε} {Φ} e e' ε ε
-          → Rules
+  ε        : Rules
+  replace  : ∀ {Φ} → (r : Rules) → (e : ε ⊢ ⟦ Φ ⟧Φ (C A)) 
+           → (e' : ε ⊢ ⟦ Φ ⟧Φ R) → Rules
 
 data Rule {Φ} (e : ε ⊢ ⟦ Φ ⟧Φ (C A)) (e' : ε ⊢ ⟦ Φ ⟧Φ R) : Rules → Set where
   rule : ∀ rs → (r : rel {ε} {Φ} e e' ε ε) → Rule e e' (replace {Φ} rs e e' r)
@@ -27,7 +26,7 @@ ruleRel : ∀ {rs Φ e e'} → Rule {Φ} e e' rs → rel {ε} {Φ} e e' ε ε
 ruleRel (rule rs r) = r
 ruleRel (skip rs) = ruleRel rs
 
-
+{-
 data Patφ (φ φ' : Ftx) : (Φ : Functor) → Set where
   var   : ∀ {Φ}  → (v : φ ∋↝ Φ) → Patφ φ φ' Φ
   pvar  : ∀ {Φ}   → (v : φ' ∋↝ Φ) → Patφ φ φ' Φ
@@ -64,5 +63,5 @@ data Rewrite {φ} {φ'} {Φ} {Φ'} (p : Patφ φ φ' Φ) (p' : Patφ φ φ' Φ')
   skip :  ∀ {ps φ₁ Φ₁ Φ₂} {p₁ : Patφ φ φ₁ Φ₁} {p₂ : Patφ φ φ₁ Φ₂} 
        → Rewrite p p'  ps
        → Rewrite p p' (rewr ps p₁ p₂)
-
+-}
 \end{code}

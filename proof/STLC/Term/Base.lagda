@@ -1,3 +1,4 @@
+%if False
 \begin{code}
 
 module STLC.Term.Base where
@@ -5,20 +6,22 @@ module STLC.Term.Base where
 open import STLC.Variable public
 open import Relation.Binary.PropositionalEquality
 
-open import Relation.Nullary.Decidable
-
-open import Data.Nat
-open import Data.Fin hiding (_-_)
-
 infix 2 _⊢_
 infixl 10 _·_
 infixl 10 _≡·_    
 
-data _⊢_ : Con → Ty → Set where
-  var  : ∀ {Γ σ}    → Γ ∋ σ → Γ ⊢ σ
-  Λ    : ∀ {σ Γ τ}  → Γ , σ ⊢ τ → Γ ⊢ σ ⇒ τ
-  _·_  : ∀ {σ Γ τ}  → Γ ⊢ σ ⇒ τ → Γ ⊢ σ → Γ ⊢ τ
+\end{code}
+%endif
 
+\begin{code}
+data _⊢_ (Γ : Con) : Ty → Set where
+  var  : ∀ {σ}    → Γ ∋ σ → Γ ⊢ σ
+  Λ    : ∀ {σ τ}  → Γ , σ ⊢ τ → Γ ⊢ σ ⇒ τ
+  _·_  : ∀ {σ τ}  → Γ ⊢ σ ⇒ τ → Γ ⊢ σ → Γ ⊢ τ
+\end{code}
+
+%if False
+\begin{code}
 ≡var : ∀ {Γ τ} {e1 e2 : Γ ∋ τ} → e1 ≡ e2 → var e1 ≡ var e2
 ≡var = cong var
 
@@ -46,8 +49,5 @@ var-inj refl = refl
 ·-inj-right : ∀ {Γ σ τ} → {f f' : Γ ⊢ σ ⇒ τ} → {a a' : Γ ⊢ σ} → f · a ≡ f' · a' 
            → a ≡ a'
 ·-inj-right refl = refl
-
-v : (m : ℕ) → {Γ : Con} → {m<n : True (suc m ≤? size Γ)} → Γ ⊢ ind Γ (#_ m {size Γ} {m<n})
-v x = var (i x)
-
 \end{code}
+%endif

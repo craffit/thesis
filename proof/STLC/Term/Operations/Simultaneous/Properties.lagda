@@ -128,59 +128,59 @@ split-/ t s s' = sym (merge-/ t s s')
 
 -- Proofs involving ι
 
-ι-lookup : ∀ {Γ τ} → (v : Γ ∋ τ) → lookup v ι ≡ var v
-ι-lookup vz = refl
-ι-lookup (vs y) = begin
-         _ ≡⟨ wk-lookup y vz ι ⟩
-         _ ≡⟨ cong weaken (ι-lookup y) ⟩
+I-lookup : ∀ {Γ τ} → (v : Γ ∋ τ) → lookup v I ≡ var v
+I-lookup vz = refl
+I-lookup (vs y) = begin
+         _ ≡⟨ wk-lookup y vz I ⟩
+         _ ≡⟨ cong weaken (I-lookup y) ⟩
          _ ∎
 
-/ι : ∀ {Γ τ} → (t : Γ ⊢ τ) → t / ι ≡ t
-/ι (var y)   = ι-lookup y
-/ι (Λ y)     = ≡Λ (/ι y)
-/ι (y · y')  = /ι y ≡· /ι y'
+/I : ∀ {Γ τ} → (t : Γ ⊢ τ) → t / I ≡ t
+/I (var y)   = I-lookup y
+/I (Λ y)     = ≡Λ (/I y)
+/I (y · y')  = /I y ≡· /I y'
 
-wkExtS-ι : ∀ {Γ τ} → (v : Γ ∋ τ) → wkExtS v v ι ≡ ι
-wkExtS-ι vz = refl
-wkExtS-ι (vs y) =
+wkExtS-I : ∀ {Γ τ} → (v : Γ ∋ τ) → wkExtS v v I ≡ I
+wkExtS-I vz = refl
+wkExtS-I (vs y) =
        begin
-       _ ≡⟨ ≡ss (≡extS y refl (sym (wkSExcvz y ι))) refl ⟩
-       _ ≡⟨ ≡ss (wk-ext-comm y vz (var y) (wkS y ι)) refl ⟩
-       _ ≡⟨ ≡ss (≡wkS vz (wkExtS-ι y)) refl ⟩
+       _ ≡⟨ ≡ss (≡extS y refl (sym (wkSExcvz y I))) refl ⟩
+       _ ≡⟨ ≡ss (wk-ext-comm y vz (var y) (wkS y I)) refl ⟩
+       _ ≡⟨ ≡ss (≡wkS vz (wkExtS-I y)) refl ⟩
        _ ∎
 
-/=>ι : ∀ {Γ Δ} → (s : Γ => Δ) → s /=> ι ≡ s
-/=>ι sz = refl
-/=>ι (ss y y') = cong₂ ss (/=>ι y) (/ι y')
+/=>I : ∀ {Γ Δ} → (s : Γ => Δ) → s /=> I ≡ s
+/=>I sz = refl
+/=>I (ss y y') = cong₂ ss (/=>I y) (/I y')
 
-ι/=> : ∀ {Γ Δ} → (s : Γ => Δ) → ι /=> s ≡ s
-ι/=> sz = refl
-ι/=> (ss y y') = cong (λ v → ss v y') (trans (wkS-extS/=> vz y' ι y) (ι/=> y))
+I/=> : ∀ {Γ Δ} → (s : Γ => Δ) → I /=> s ≡ s
+I/=> sz = refl
+I/=> (ss y y') = cong (λ v → ss v y') (trans (wkS-extS/=> vz y' I y) (I/=> y))
 
 wkTm/sub : ∀ {Γ σ τ} -> (y : Γ ∋ σ) → (t : Γ - y ⊢ τ) → (u : Γ - y ⊢ σ) 
          → wkTm y t / sub y u ≡ t
 wkTm/sub y t u =
   begin
-  _ ≡⟨ wk-ext/ y t u ι ⟩
-  _ ≡⟨ /ι t ⟩
+  _ ≡⟨ wk-ext/ y t u I ⟩
+  _ ≡⟨ /I t ⟩
   _ ∎
 
 {-
-wkS-ι : ∀ {Γ τ σ} → (v : _∋_ Γ σ) → (t : _⊢_ (Γ - v) τ) → t / wkS v ι ≡ wkTm v t
-wkS-ι v t = trans (wk/ v t ι) (cong (λ p → wkTm v p) (/ι t))
+wkS-I : ∀ {Γ τ σ} → (v : _∋_ Γ σ) → (t : _⊢_ (Γ - v) τ) → t / wkS v I ≡ wkTm v t
+wkS-I v t = trans (wk/ v t I) (cong (λ p → wkTm v p) (/I t))
 
 substVar-lookup : ∀ {σ Γ τ} → (v : _∋_ Γ τ) → (x : _∋_ Γ σ) → (t : _⊢_ (Γ - x) σ)
            → substVar v x t ≡ lookup v (sub x t)
 substVar-lookup v x t with eq x v
-substVar-lookup v .v t | same = sym (ext-lookup v t ι)
-substVar-lookup .(wkv x y) x t | diff .x y = trans (sym (ι-lookup y)) (sym (ext-wkv-lookup x y t ι))
+substVar-lookup v .v t | same = sym (ext-lookup v t I)
+substVar-lookup .(wkv x y) x t | diff .x y = trans (sym (I-lookup y)) (sym (ext-wkv-lookup x y t I))
 
 subst/ : ∀ {Γ τ σ} → (v : _∋_ Γ σ) → (t : _⊢_ Γ τ) → (x : _⊢_ (Γ - v) σ) → subst t v x ≡ t / sub v x
 subst/ v (var y) x    = substVar-lookup y v x
 subst/ v (Λ y) x      =
   begin
   _ ≡⟨ cong Λ (subst/ (vs v) y (wkTm vz x)) ⟩
-  _ ≡⟨ cong (\p → Λ (y / ss p (var vz))) (wk-ext-comm v vz x ι)  ⟩
+  _ ≡⟨ cong (\p → Λ (y / ss p (var vz))) (wk-ext-comm v vz x I)  ⟩
   _ ∎
 subst/ v (y · y') x = cong₂ _·_ (subst/ v y x) (subst/ v y' x)
 

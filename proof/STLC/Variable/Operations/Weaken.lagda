@@ -1,3 +1,4 @@
+%if False
 \begin{code}
 
 module STLC.Variable.Operations.Weaken where
@@ -8,11 +9,18 @@ open import STLC.Variable.Congruence
 open import STLC.Context.Equality
 open import Relation.Binary.PropositionalEquality
 
+\end{code}
+%endif
+
+\begin{code}
 wkv : ∀ {Γ σ τ} → (x : Γ ∋ σ) → Γ - x ∋ τ → Γ ∋ τ
 wkv vz     y       = vs y
 wkv (vs x) vz      = vz
 wkv (vs x) (vs y)  = vs (wkv x y)
+\end{code}
 
+%if False
+\begin{code}
 !,∋-wkv : ∀ {Γ Δ τ σ a b} → (v : Γ ∋ a) → (p1 : Γ ≡Γ Δ) → (p2 : τ ≡τ σ) 
        → (p3 : a ≡τ b) → (y : Γ - v ∋ τ) 
        → ! p1 , p2 >∋ wkv v y 
@@ -38,6 +46,5 @@ wkv-inj (vs k) vz vz p = refl
 wkv-inj (vs k) vz (vs j) ()
 wkv-inj (vs k) (vs i) vz ()
 wkv-inj (vs k) (vs i) (vs j) p = ≡vs (wkv-inj k i j (vs-inj p))
-  
-
 \end{code}
+%endif  

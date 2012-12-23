@@ -1,3 +1,4 @@
+%if False
 \begin{code}
 
 module STLC.Variable.Base where
@@ -7,10 +8,17 @@ open import Relation.Binary.PropositionalEquality
 
 infix 4 _∋_ 
 
+\end{code}
+%endif
+
+\begin{code}
 data _∋_ : Con → Ty → Set where
   vz : ∀ {Γ σ}    → Γ , σ ∋ σ
   vs : ∀ {τ Γ σ}  → Γ ∋ σ → Γ , τ ∋ σ
+\end{code}
 
+%if False
+\begin{code}
 vs-inj : ∀ {τ Γ σ} → {i j : Γ ∋ σ} → vs {τ} i ≡ vs j → i ≡ j
 vs-inj refl = refl
 
@@ -18,3 +26,4 @@ vs-inj refl = refl
 ≡vs = cong vs
 
 \end{code}
+%endif

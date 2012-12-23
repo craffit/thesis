@@ -1,3 +1,4 @@
+%if False
 \begin{code}
 
 module STLC.Term.Operations.Weaken where
@@ -9,6 +10,10 @@ open import Util.PropositionalEquality
 open import Relation.Nullary
 open ≡-Reasoning
 
+\end{code}
+%endif
+
+\begin{code}
 wkTm : ∀ {σ Γ τ} → (x : Γ ∋ σ) → Γ - x ⊢ τ → Γ ⊢ τ
 wkTm x (var v)    = var (wkv x v)
 wkTm x (Λ t)      = Λ (wkTm (vs x) t)
@@ -16,6 +21,11 @@ wkTm x (t₁ · t₂)  = wkTm x t₁ · wkTm x t₂
 
 weaken : ∀ {σ Γ τ} → Γ ⊢ τ → Γ , σ ⊢ τ
 weaken t = wkTm vz t
+
+\end{code}
+
+%if False
+\begin{code}
 
 ≡wkTm :  ∀ {σ Γ τ} → (x : Γ ∋ σ) → {e e' : Γ - x ⊢ τ} → e ≡ e'
       → wkTm x e ≡ wkTm x e'
@@ -70,3 +80,4 @@ wkTm-inj (y · y') (Λ y0) ()
 wkTm-inj (y · y') (y0 · y1) p with ·-inj-index p
 wkTm-inj (y · y') (y0 · y1) p | refl = wkTm-inj y y0 (·-inj-left p) ≡· wkTm-inj y' y1 (·-inj-right p)
 \end{code}
+%endif

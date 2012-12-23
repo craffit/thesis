@@ -6,6 +6,12 @@ open import STLC
 open import TTS.Functor.Base
 import Relation.Binary.EqReasoning
 
+dimap : ∀ {a b} → (Φ : Functor) → ε ⊢ (a ⇒ b) ⇒ (b ⇒ a) ⇒ ⟦ Φ ⟧Φ b ⇒ ⟦ Φ ⟧Φ a
+dimap Id         = Λ (Λ (v 0))
+dimap (K n)      = Λ (Λ id)
+dimap (Φ₁ ⟶ Φ₂) = Λ (Λ (Λ (up (dimap Φ₂) · v 2 · v 1 ∘ v 0 ∘ up (dimap Φ₁) · v 1 · v 2)))
+
+
 do-dimap : ∀ {Φ₁ Φ₂ a b} → (f1 : ε ⊢ a ⇒ b) → (f2 : ε ⊢ b ⇒ a) 
          → dimap (Φ₁ ⟶ Φ₂) · f1 · f2 βη-≡ Λ (up (dimap Φ₂ · f1 · f2) ∘ v 0 ∘ up (dimap Φ₁ · f2 · f1))
 do-dimap {Φ₁} {Φ₂} f1 f2 =

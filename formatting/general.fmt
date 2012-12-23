@@ -1,3 +1,9 @@
+%format center = "\fCenter"
+
+%format forall = "\forall "
+%format empty  = "\emptyset "
+%format emptyE = "\epsilon "
+%format `comp` = "\circ "
 %format (hole(x)) = "\mathring{" x "}"
 
 %format rep = "\textbf{rep}"
@@ -19,6 +25,8 @@
 %format tyF = "\mathring{\tau}"
 %format (tyF_(x)) = "\mathring{\tau}_{" x "}"
 
+%format sch = "\sigma "
+%format schF = "\mathring{\sigma} "
 %format pC = "\mathfrak{C} "
 
 %format env = "\Gamma "
@@ -26,23 +34,42 @@
 %format envF = "\mathring{\Gamma}"
 %format (envF_(x)) = "\mathring{" x "}"
 
+%format sbst = "\theta "
+%format sbstF = "\mathring{\theta} "
+
 %format (int(x)) = "\llbracket " x "\rrbracket"
 %format (int_(x)(y)) = "\llbracket " x "\rrbracket_{" y "}"
 
-%format `stlc`    = "\vdash_{\lambda}"
-%format stlc      = "\lambda " 
-%format (TTS(x)) = "TTS_{" x "}"
+%format `stlc`    = "\:\vdash_{\lambda}\:"
+%format stlc      = "\lambda "
+%format `lt`      = "\:\vdash_{let}\:" 
+%format (TTS(x))  = "TTS_{" x "}"
 
-%format dimap = "dimap"
-%format fmap = "fmap"
-
-%format (dimap_(x)) = "dimap_{" x "}"
-%format (fmap_(x)) = "fmap_{" x "}"
-%format (sub_(x))  = "\theta_{" x "}"
-
-%format `beq`    = "\:\equiv_{\beta\eta}\:"
-
+%format `beq`  = "\:\equiv_{\beta\eta}\:"
+%format `imp`  = "\supset "
+%format `impL` = "\subset "
 %format `ret`  = "\vartriangleleft "
 %format `iso`  = "\cong "
-
+%format `to`   = "\mapsto "
 %format (eval(x)) = x "\downarrow"
+
+%format (rel1(x)(y)) = "\llbracket " x "\rrbracket_{" y "}"
+%format (relV(x)) = "\mathcal{V}\llbracket " x "\rrbracket"
+%format (relE(x)) = "\mathcal{E}\llbracket " x "\rrbracket"
+%format (judge(e)) = "\mathcal{J}(" e ")"
+%format (prop(e)) = "\mathcal{P}(" e ")"
+%format cls = "\rho "
+%format cls' = "\rho^\prime "
+%format sub = "\theta "
+%format sub' = "\theta^\prime "
+
+%format (closure(x)) = x "\downarrow "
+%format (tosub(x)) = x "\downarrow^{*} "
+%format (close(x)(y)) = x "\:@\: " y
+%format (subst(x)(y)) = x "\:@\:" y
+%format , = "\ ,\ " 
+
+%format (lift(x)) = x "\uparrow "
+
+%format genF = "\mathring{gen}"
+%format instF = "\mathring{inst}"

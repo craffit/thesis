@@ -1,0 +1,44 @@
+\newcommand{\HIdent}[1]{\text{\textbf{#1}}}
+\newcommand{\HType}[1]{\text{\textbf{#1}}}
+\newcommand{\HConst}[1]{\text{\textbf{#1}}}
+
+%format some = "\exists"
+%format magic = "\HIdent{magic}"
+%format fmap = "\HIdent{fmap}"
+%format dimap = "\HIdent{dimap}"
+
+%format (fmap_(x)) = "\HIdent{fmap}_{" x "}"
+%format (dimap_(x)) = "\HIdent{dimap}_{" x "}"
+
+%format id = "\HIdent{id} "
+
+%format percent = "\HIdent{percent} "
+%format magic = "\HIdent{magic} "
+%format xor = "\HIdent{xor} "
+%format round = "\HIdent{round} "
+%format isEven = "\HIdent{isEven} "
+%format upper = "\HIdent{upper} "
+%format fix   = "\HIdent{fix} "
+
+%format map = "\HIdent{map} "
+%format filter = "\HIdent{filter} "
+%format mapS = "\HIdent{mapS} "
+%format filterS = "\HIdent{filterS} "
+%format step = "\HIdent{step} "
+%format seed = "\HIdent{seed} "
+
+%format extract = "\HIdent{extract} "
+%format step' = "\HIdent{step'} "
+%format op = "\HIdent{op} "
+%format op' = "\HIdent{op}' "
+
+%format Done = "\HConst{Done} "
+%format Skip = "\HConst{Skip} "
+%format Yield = "\HConst{Yield} "
+
+%format Float = "\HType{Float} "
+%format Int = "\HType{Int} "
+%format String = "\HType{String} "
+%format Char = "\HType{Char} "
+%format Step = "\HType{Step} "
+%format Stream = "\HType{Stream} "

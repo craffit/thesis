@@ -6,39 +6,48 @@ open import STLC
 open import TTS.Functor.Base
 open import Util.PropositionalEquality
 
-infix 4 _∋↝_
-infixl 5 _-↝_
+infixr 4 _↑φ
+infixr 7 ⟦_⟧φ_
+infixr 7 ⟦_⟧∋_
+infix 4 _∋φ_
+infixl 5 _-φ_
 
 \end{code}
 %endif
+
+A functor context is basically the same as a normal context, only containing functors. The accompanying interpretaion and lifting funcitons are equaly straightforward.
 
 \begin{code}
 data Ftx : Set where
   ε    : Ftx
   _,_  : (φ : Ftx) → (Φ : Functor) → Ftx
 
-⟦_⟧Γ : Ftx → Ty → Con
-⟦ ε      ⟧Γ n = ε
-⟦ φ , Φ  ⟧Γ n = ⟦ φ ⟧Γ n , ⟦ Φ ⟧Φ n
+⟦_⟧φ_ : Ftx → Ty → Con
+⟦ ε      ⟧φ n = ε
+⟦ φ , Φ  ⟧φ n = ⟦ φ ⟧φ n , ⟦ Φ ⟧Φ n
+
+_↑φ : Con → Ftx
+ε       ↑φ = ε
+y , y'  ↑φ = (y ↑φ) , y' ↑Φ
+
 \end{code}
 
+Also the concept of variables extends naturally to functors, with the accompanying interpretation function.
 
 \begin{code}
-data _∋↝_ : Ftx → Functor → Set where
-  vz : ∀ {φ Φ} → φ , Φ ∋↝ Φ
-  vs : ∀ {Γ Φ₁ Φ₂} → Γ ∋↝ Φ₁ → Γ , Φ₂ ∋↝ Φ₁
+data _∋φ_ : Ftx → Functor → Set where
+  vz : ∀ {φ Φ} → φ , Φ ∋φ Φ
+  vs : ∀ {Γ Φ₁ Φ₂} → Γ ∋φ Φ₁ → Γ , Φ₂ ∋φ Φ₁
 
-⟦_⟧∋ : ∀ {φ Φ} → (v : φ ∋↝ Φ) → (a : Ty) → ⟦ φ ⟧Γ a ∋ ⟦ Φ ⟧Φ a
+⟦_⟧∋_ : ∀ {φ Φ} → (v : φ ∋φ Φ) → (a : Ty) → ⟦ φ ⟧φ a ∋ ⟦ Φ ⟧Φ a
 ⟦ vz    ⟧∋ t = vz
 ⟦ vs y  ⟧∋ t = vs (⟦ y ⟧∋ t)    
 \end{code}
 
+%if False
 \begin{code}
-_↑φ : Con → Ftx
-ε ↑φ = ε
-(y , y') ↑φ = y ↑φ , (y' ↑Φ)
 
-↑φ-≡Γ : ∀ {a Γ} → Γ ≡Γ ⟦ Γ ↑φ ⟧Γ a
+↑φ-≡Γ : ∀ {a Γ} → Γ ≡Γ ⟦ Γ ↑φ ⟧φ a
 ↑φ-≡Γ {a} {ε} = ε
 ↑φ-≡Γ {a} {y , y'} = ↑φ-≡Γ , ↑Φ-≡τ
 
@@ -62,15 +71,15 @@ _↓τ : ∀ {Φ} → Φ ↓Φ → Ty
 \end{code}
 
 \begin{code}
-_-↝_ : {Φ : Functor} → (φ : Ftx) → φ ∋↝ Φ → Ftx
-ε       -↝ ()
-(φ , Φ) -↝ vz     = φ
-(φ , Φ) -↝ (vs x) = (φ -↝ x) , Φ
+_-φ_ : {Φ : Functor} → (φ : Ftx) → φ ∋φ Φ → Ftx
+ε       -φ ()
+(φ , Φ) -φ vz     = φ
+(φ , Φ) -φ (vs x) = (φ -φ x) , Φ
 
-wkv∋↝ : ∀ {φ Φ Φ'} → (x : φ ∋↝ Φ') → φ -↝ x ∋↝ Φ → φ ∋↝ Φ
-wkv∋↝ vz     y       = vs y
-wkv∋↝ (vs x) vz      = vz
-wkv∋↝ (vs x) (vs y)  = vs (wkv∋↝ x y)
+wkv∋φ : ∀ {φ Φ Φ'} → (x : φ ∋φ Φ') → φ -φ x ∋φ Φ → φ ∋φ Φ
+wkv∋φ vz     y       = vs y
+wkv∋φ (vs x) vz      = vz
+wkv∋φ (vs x) (vs y)  = vs (wkv∋φ x y)
 
 {-
 -↝dist≡ :  ∀ {φ Φ} → (x : φ ∋↝ Φ) → Ty → Set
@@ -93,3 +102,4 @@ wkv∋↝-eq (vs y) vz = cong (wkv (vs (⟦ y ⟧∋ _))) (sym (!,∋vz (substV-
 wkv∋↝-eq (vs y) (vs y') = cong vs (wkv∋↝-eq y y')
 -}
 \end{code}
+%endif

@@ -1,3 +1,4 @@
+%if False
 \begin{code}
 
 module STLC.Term.Operations.Close where
@@ -12,18 +13,35 @@ open import Util.PropositionalEquality
 open ≡-Reasoning
 
 infix 3 _↓
+\end{code}
+%endif
 
+\paragraph{Term closure}
+The semantic equivalence property of |(TTS(stlc))| is defined on terms 'under a closing environment'. Thus the object language is equipped with a closure construction, defined as follows:
+
+\begin{code}
 data _↓ : (Γ : Con) → Set where
   ε    : ε ↓
   cls  : ∀ {τ Γ} → Γ ↓ → Γ ⊢ τ → Γ , τ ↓
+\end{code}
 
+Such a closure carries a closing term for each variable in the environment. These terms should be substituted into a term \emph{sequantially} to close the term. Such a closing operation can not be defined directly but a closure can be turned into an equivalent simultaneous substitution using the following function:
+
+\begin{code}
 ↓-=> : ∀ {Γ} → Γ ↓ → Γ => ε
-↓-=> ε          = sz
-↓-=> (cls y y') = ss (↓-=> y) (y' / ↓-=> y)
+↓-=> ε           = sz
+↓-=> (cls y y')  = ss (↓-=> y) (y' / ↓-=> y)
+\end{code}
 
+Defining a term closing function is now simple:
+
+\begin{code}
 close : ∀ {Γ τ} → Γ ⊢ τ → Γ ↓ → ε ⊢ τ
 close t s = t / ↓-=> s
+\end{code}
 
+%if False
+\begin{code}
 %close : ∀ {Γ τ} {e e' : Γ ⊢ τ} → (s : Γ ↓) → e βη-≡ e' 
        → close e s βη-≡ close e' s
 %close ε eq = eq %/- sz 
@@ -83,3 +101,4 @@ data _βη↓_ : {Γ : Con} → Γ ↓ → Δ ⊂ Γ → Set where
 
 -}
 \end{code}
+%endif

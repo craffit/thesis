@@ -1,3 +1,4 @@
+%if False
 \begin{code}
 
 module STLC.Variable.Operations.Subtract where
@@ -9,11 +10,18 @@ open import Relation.Binary.PropositionalEquality
 
 infixl 5 _-_ 
 
-_-_ : {σ : Ty} → (Γ : Con) → Γ ∋ σ → Con
-ε       - ()
-(Γ , σ) - vz     = Γ
-(Γ , τ) - (vs x) = (Γ - x) , τ
+\end{code}
+%endif
 
+\begin{code}
+_-_ : {σ : Ty} → (Γ : Con) → Γ ∋ σ → Con
+ε      - ()
+Γ , σ  - vz    = Γ
+Γ , τ  - vs x  = (Γ - x) , τ
+\end{code}
+
+%if False
+\begin{code}
 -≡Γ : ∀ {Γ Δ τ σ} → (p : Γ ≡Γ Δ) → (p2 : τ ≡τ σ) → (v : Γ ∋ τ) 
       → Γ - v ≡Γ Δ - (! p , p2 >∋ v)
 -≡Γ ε p2 ()
@@ -30,5 +38,6 @@ _-_ : {σ : Ty} → (Γ : Con) → Γ ∋ σ → Con
       → (v : Γ ∋ σ) → (-≡Γ (p , p2) p3 (vs v)) ≡ ((-≡Γ p p3 v) , p2)
 -≡Γvs p p2 p3 v with ≡τ-≡ p2
 ... | refl = cong (_,_ (-≡Γ p p3 v)) (sym (≡τ-eq-refl p2))
-  
+
 \end{code}
+%endif

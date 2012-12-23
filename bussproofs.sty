@@ -480,6 +480,14 @@
     \ignorespaces%
 }
 
+\def\UnaryInfI#1#2{%
+    \prepUnary%
+    \buildConclusion{#1}{#2}%
+    \joinUnary%
+    \resetInferenceDefaults%
+    \ignorespaces%
+}
+
 \def\UnaryInfC#1{
     \prepUnary%
     \buildConclusionC{#1}%
@@ -505,6 +513,14 @@
 }
 
 \def\BinaryInf$#1\fCenter#2${%
+    \prepBinary%
+    \buildConclusion{#1}{#2}%
+    \joinBinary%
+    \resetInferenceDefaults%
+    \ignorespaces%
+}
+
+\def\BinaryInfI#1#2{%
     \prepBinary%
     \buildConclusion{#1}{#2}%
     \joinBinary%

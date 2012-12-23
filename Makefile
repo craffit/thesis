@@ -15,7 +15,7 @@ TARGET := thesis
 
 default : $(TARGET).pdf
 
-$(TARGET).pdf : $(TARGET).bib
+$(TARGET).pdf : $(TARGET).bib sites.bib
 
 #-------------------------------------------------------------------------------
 
