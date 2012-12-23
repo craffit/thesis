@@ -84,7 +84,11 @@ Note that this system does not specify how the transformation system is implemen
 \section{Overview}
 This section gives an overview of the upcoming chapters.
 
-Chapter~\ref{chap:tts} introduces the general concepts and construction of the |TTS| system. First more extensive motivating examples of type-changing program transformations are introduced in the first two sections. Consequently the basic type and transform system for the simply typed lambda calculus is presented, followed by an example application of the Hughes' strings example in Section~\ref{sec:hughes-transform}. The last section will briefly discuss the possibilities and problems hen implementing an actual transformations system
+Chapter~\ref{chap:tts} introduces the general concepts and construction of the |TTS| system. First more extensive motivating examples of type-changing program transformations are introduced in the first two sections. Consequently the basic type and transform system for the simply typed lambda calculus is presented, followed by an example application of the Hughes' strings example in Section~\ref{sec:hughes-transform}. The last section will briefly discuss the possibilities and problems when implementing an actual transformations system.
 
-Chapter~\ref{chap:proof} establishes the core properties of the type and transform system. Section~\ref{sec:typing} and Section~\ref{sec:productivity} establish the type soundness and productivity of the type and transform system. Section~\ref{sec:semantics} introduces logical relations and uses these to prove the semantic correctness of program transformations.
+Chapter~\ref{chap:proof} establishes the core properties of the type and transform system. Section~\ref{sec:typing} and Section~\ref{sec:productivity} establish the type soundness and productivity of the type and transform system. Section~\ref{sec:semantics} introduces logical relations and uses these to prove the semantic correctness of program transformations. The last two section discuss some of the theoretical background of the transformation system.
+
+Chapter~\ref{chap:mechanical} discusses the formalization of the type and transform system in the programming language Agda in the first two sections and shows how the transformation system is mechanically proven correct in section~\ref{sec:mechanical-properties}. Lastly an example transformation will be shown.
+
+In Chapter~\ref{chap:extensions} possible extensions of the type and transform system are discussed, to make the system ready for real-world languages. The last two chapter discuss future work and conclude.
 

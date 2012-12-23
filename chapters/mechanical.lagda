@@ -91,6 +91,7 @@ There is a bit of room in the design space as to how represent transformation ru
 The |Rules| datatype is list of transformation terms. A |Rule| indexes a rule in this list. Note that only closed terms can be transformed using this formulation, this makes the transformations context-insensitive.
 
 \section{Properties}
+\label{sec:mechanical-properties}
 We will now mechanically show that the defined system adheres to the desired transformation properties of Section~\ref{sec:tts}. This proof is follows the same structure as the 'pen-and-paper' proof from Chapter~\ref{chap:proof} and relies on the Curry-Howard correspondence for its validity.
 
 \paragraph{Curry-Howard Correspondence} The Curry Howard correspondence is the notion that there exists a direct connection between types in a programming language and propositions in classical, predicate and intuitionistic logic. This correspondence makes it possible to construct proofs as programs: providing an implementation program for a given type corresponds to proving that same logical property. According to the Curry-Howard correspondence, implication in logic has a direct relation to function space in programming languages, and universal quantification is related to dependent function space. Sum types and product types have a direct relation to disjunction and conjunction. In this way the Curry-Howard correspondence makes it possible to mechanically prove logical properties in a programming language, a feature that is put to good use in this section.
