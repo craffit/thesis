@@ -47,7 +47,7 @@ For all well-typed terms |env `stlc` e : ty| an identity transformation exists w
 The existence of the propagation rules makes that the identity transformation can always be constructed. Each rule in the stlc typing derivation has a matching rule in |(TTS(stlc))| which can always be applied.
 \end{proof}
 
-\section{\texorpdfstring{|(TTS(stlc))|}{TTS stlc} preserves Semantics}
+\section{\texorpdfstring{|(TTS(stlc))|}{TTS stlc} Preserves Semantics}
 \label{sec:semantics}
 The third TTS property states that two terms should be semantically equivalent. Semantic equivalence is proven by showing $\beta\eta$-convertibility of the source and result term under all closing environments, as formulated in as the following property:
 
@@ -87,7 +87,7 @@ The logical relation extends naturally from single terms to closing substitution
 > (relE(empty))       id                       id                         = empty
 > (relE(envF , tyF))  ([x `to` i] `comp` sub)  ([x `to` i'] `comp` sub')  = (relE(envF)) sub sub' `and` (relV(tyF)) sub sub' i i'
 
-\subsection{Proof using logical relations}
+\subsection{Proof using Logical Relations}
 When constructing a proof using logical relations, the proof is usually constructed using two key theorems, occurring in roughly the following form:
 
 \begin{enumerate}
@@ -369,7 +369,7 @@ In our transformation system, the |abs| and |rep| functions make it possible to 
 \begin{comment}
 The idea of an abstract and a representation type was already present in Hughes' work~\ref{hughes86}. Type and transform systems can be seen as a generalization of
 \end{comment}
-\section{The Typing Functor is an actual Functor}
+\section{The Typing Functor}
 \label{sec:functor}
 
 %include functor.lhs

@@ -2,7 +2,7 @@ Although the simply typed lambda calculus is a convenient language with which to
 
 This chapter introduces such fundamental extensions for the basic |(TTS(stlc))| along several axis. The soundness  of these extensions is not proven here but is informally shown and provability is briefly discussed.
 
-\section{Extending to let-polymorphism}
+\section{Extending to Let-Polymorphism}
 One of the most common extensions to the simply typed lambda calculus is let-polymorphism with Hindley-Milner typing as found in ML and Haskell. This extension introduces the concept of type variables into the language and a way to quantify over them, as in the following definitions:
 
 > ty    ::= T | a | ty -> ty
@@ -90,7 +90,7 @@ Figure~\ref{fig:letrules} shows the typing rules for the let-polymorphic lambda 
 
 Informally we reason that, although the language now contains polymorphism, the type and transform system only makes changes to the base types. Thus, type variables will be left alone during transformation. Type instantiations can now also instantiate to the hole type, but this is no problem because a polymorphic function can be instantiated with any type.
 
-\section{Including a fixpoint}
+\section{Including a Fixpoint}
 Although the simply typed lambda calculus serves well as a foundation for a typed program transformation system, it has one important shortcoming: it is not Turing complete. A language needs some form of unbridled recursion to become Turing complete. A well-known construct for recursion is the fixpoint. A fixpoint works by taking a function and turning it into a possibly infinite self-application. An example of a fixpoint is the Y combinator, but other variants exist as well.
 
 > fix :: (a -> a) -> a

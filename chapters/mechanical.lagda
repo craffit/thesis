@@ -6,7 +6,7 @@ In this light, we have verified the |(TTS(stlc))| transformation system in the d
 
 This chapter will give an overview of how the transformation system is represented in Agda and how the transformation properties are mechanically verified. The proof relies on the validity of the Curry-Howard correspondence, which will be introduced in Section~\ref{sec:mechanical-properties}. The source code can be found on GitHub~\cite{source} for the interested reader.
 
-\section{STLC object language}
+\section{STLC Object Language}
 
 Fundamental to a mechanical formalization of the TTS system is the representation of the object language, STLC. STLC can be represented in multiple ways, as described in~\cite{keuchel11}. The essential choice is between a Higher Order Abstract Syntax and a de Bruijn representation, among others. Although HOAS terms can be constructed in Agda, Agda is not strong enough to reason about semantic equivalence of HOAS terms, unlike other languages such as Twelf~\cite{schurmann08}. The representation chosen here is a first-order representation using well-typed de Bruijn indices as found in Keller and Altenkirch~\cite{keller10}. A first-order formulation is mandatory because it allows full inductive reasoning over terms and types in the object language and thus reasoning about the semantics. Formulating using well-typed de Bruijn indices is useful because it asserts important properties about the terms by construction.
 
@@ -34,7 +34,7 @@ This method of representing STLC terms has two very important benefits:
 
 Note also that we do not specify a semantic interpretation for the simply typed lambda calculus and no typing language is specified. This is done intentionally to show that the correctness of |(TTS(stlc))| is independent of the semantics of the simply typed lambda calculus and independent of the typing language. The only restriction on the semantics is that it allows $\beta\eta$-convertibility as defined in section~\ref{subsec:equality}.
 
-\subsection{Manipulating and constructing terms} 
+\subsection{Manipulating and Constructing Terms} 
 The simply typed lambda calculus comes equipped with a set of functions to construct, and, most importantly, evaluate terms.
 \paragraph{Context weakening}
 When constructing STLC terms the need arises to introduce fresh variables. Creating room in a typing context for a variable is simple, but the typing context of a term can not be changed at will. A function is needed which changes a term to accept an extra free variable in the context.
@@ -102,10 +102,10 @@ We will now mechanically show that the defined system adheres to the desired tra
 
 \paragraph{Curry-Howard Correspondence} The Curry Howard correspondence is the notion that there exists a direct connection between types in a programming language and propositions in classical, predicate and intuitionistic logic. This correspondence makes it possible to construct proofs as programs: providing an implementation program for a given type corresponds to proving the corresponding logical property. According to the Curry-Howard correspondence, implication in logic has a direct relation to function space in programming languages, and universal quantification is related to dependent function space. Sum types and product types have a direct relation to disjunction and conjunction. In this way the Curry-Howard correspondence makes it possible to mechanically prove logical properties in a programming language, a feature that is put to good use in this section.
 
-\subsection{Typing property}
+\subsection{Typing Property}
 The TTS typing property does not need any further proving but is inherent in the construction of the whole system. Terms are type-correct by construction using the well-typed De Bruijn indices and the transformation relation is indexed by two terms which derive a valid type from the typing functor. 
 
-\subsection{Identity transformation} As a bare minimum, all transformation systems should allow the identity transformation to be productive. The following function shows this by showing that a valid transformation derivation exists for any term in the simply typed lambda calculus:
+\subsection{Identity Transformation} As a bare minimum, all transformation systems should allow the identity transformation to be productive. The following function shows this by showing that a valid transformation derivation exists for any term in the simply typed lambda calculus:
 
 %include ../proof/TTS/Judgement/Properties.lagda
 
@@ -113,7 +113,7 @@ The typing functor and functor context of the identity transformation are the li
 
 This shows clearly how implication in logic is connected to function space in a programming language. The statement: the existence of a valid term implies the existence of a transformation for that term, is transformed into showing that a function exists which constructs a transformation out of a term. 
 
-\subsection{Semantic equivalence}
+\subsection{Semantic Equivalence}
 The Agda formalization of the equivalence proof strictly follows the proof structure as described in Chapter~\ref{chap:proof}. The first challenge is to find a suitable Agda representation for the logical relation. The representation used here was inspired by the work of Swierstra~\cite{swierstra12}, who uses a unary logical relation to prove termination of the simply typed lambda calculus in Agda.
 
 \paragraph{Logical relation} To construct the logical relation we can make good use of dependent types: the relation constructs a different type for the different |Functor| constructors. For base types it constructs a $\beta\eta$ equivalence and for function space it constructs an implication in the form of a normal Agda function.

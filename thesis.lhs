@@ -113,11 +113,11 @@ This chapter introduces the core concepts of type and transform systems. The fir
 \label{chap:mechanical}
 %include chapters/mechanical.lagda
 
-\chapter{Extensions to the TTS system}
+\chapter{Extensions to the TTS System}
 \label{chap:extensions}
 %include chapters/ttse.lhs
 
-\chapter{Future work}
+\chapter{Future Work}
 \label{chap:future}
 %include chapters/future.lhs
 

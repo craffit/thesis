@@ -35,7 +35,7 @@ Because compilers are such critical parts of modern software systems, it is good
 
 To counter these issues, the natural way to go is looking for possible abstractions. Instead of developing individual program transformations, look for parts that can be generalized and develop a generic transformation system in which transformations can be constructed. This makes developing individual transformations faster and easier, resulting in less errors.
 
-\section{Related work}
+\section{Related Work}
 Several such systems for creating type-aware program transformation have already been developed and implemented in various forms.
 
 \begin{itemize}

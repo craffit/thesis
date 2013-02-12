@@ -202,7 +202,7 @@ The rules |Tr-Rep| and |Tr-Abs| are called the introduction and elimination rule
 
 These rules form the basis for all STLC-based transformation systems. For specific transformations such as Hughes' strings this core is extended with extra rules to perform the required transformations.
 
-\section{A TTS for Hughes' strings}
+\section{A TTS for Hughes' Strings}
 \label{sec:hughes-transform}
 The Hughes' strings transformation constitutes of three core transformations: converting a |String| to a |String| continuation (|(rep_(ss))|), converting a |String| continuation back to a |String| (|(abs_(ss))|), and replacing |String| concatenation with function composition. For the STLC version of the Hughes' strings transformation, the |(TTS(stlc))| base system is instantiated with the parameters specific to Hughes' strings. The source type |tyA| is instantiated to |String|, |tyR| is instantiated to |String -> String| and the functions |rep| and |abs| in the |Tr-Rep| and |Tr-Abs| rules are taken to be the |rep_(ss)| and |abs_(ss)| functions from Hughes' strings. What is left is adding a rule for transforming string concatenation to function composition. This rule looks as follows:
 
@@ -219,7 +219,7 @@ The rule |Tr-Comp| introduces the functor type |tyI -> tyI -> tyI|, reflecting t
 
 %include example.lhs
 
-\section{Performing a transformation}
+\section{Performing a Transformation}
 \label{sec:performing}
 In the previous sections a basic transformation system is presented which defines what constitutes a valid transformation for |(TTS(stlc))|. However, this deduction system does not show how to algorithmically perform an actual transformation. For example, the deduction system allows an infinite application of the |rep| and |abs| rule, such as the following:
 

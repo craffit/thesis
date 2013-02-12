@@ -1,4 +1,4 @@
-\subsection{Hughes' strings}
+\subsection{Hughes' Strings}
 \label{sec:hughes}
 One example of a type-changing program transformation is known as Hughes' lists ~\cite{hughes86}. In his work, Hughes presents a method which reduces the computational overhead induced by the naive implementation of string concatenation. Hughes' method does not only work for strings, but for lists in general, but we will use strings for simplicity. To see what problem Hughes' strings solve, consider the standard implementation of string concatenation:
 
@@ -35,7 +35,7 @@ The speedup comes from the fact that, instead of normal concatenation, function 
 
 All examples now have the same, optimal running time because the continuation technique avoids building intermediate results: each string is only traversed at most once. Additionally, where the speed of normal concatenation depends on the size of its first argument, function composition has a constant running time.
 
-\subsection{Stream fusion}
+\subsection{Stream Fusion}
 \label{sec:fusion}
 Another example of a type-changing program transformation is stream fusion, as found in Coutts et al.~\cite{coutts07, coutts07b}. The goal of stream fusion is the same as Hughes' lists: optimizing operations on lists. Stream fusion does this using a technique called deforestation, which reduces the number of intermediate data structures constructed during evaluation. Consider the following example:
 
