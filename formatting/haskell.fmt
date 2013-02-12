@@ -13,6 +13,8 @@
 %format id = "\HIdent{id} "
 
 %format percent = "\HIdent{percent} "
+%format percents = "\HIdent{percents} "
+%format sum = "\HIdent{sum} "
 %format magic = "\HIdent{magic} "
 %format xor = "\HIdent{xor} "
 %format round = "\HIdent{round} "
@@ -20,7 +22,9 @@
 %format upper = "\HIdent{upper} "
 %format fix   = "\HIdent{fix} "
 
+%format length = "\HIdent{length} "
 %format map = "\HIdent{map} "
+%format take = "\HIdent{take} "
 %format filter = "\HIdent{filter} "
 %format mapS = "\HIdent{mapS} "
 %format filterS = "\HIdent{filterS} "
@@ -42,3 +46,7 @@
 %format Char = "\HType{Char} "
 %format Step = "\HType{Step} "
 %format Stream = "\HType{Stream} "
+
+%format e_1 = "e_1 "
+%format e_2 = "e_2 "
+%format e_2 = "e_2 "

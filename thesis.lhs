@@ -53,6 +53,16 @@
 \usepackage{enumitem}
 \usepackage{nameref}
 
+\usepackage{relsize}
+
+%% Command for labelled items
+
+\makeatletter
+\def\namedlabel#1#2{\begingroup
+   \def\@@currentlabel{#2}%
+   \phantomsection\label{#1}\endgroup
+}
+\makeatother
 
 \theoremstyle{break}
 \theorembodyfont{\normalfont}
@@ -65,7 +75,7 @@
 \newtheorem{law}{Law}
 
 \title{A Type-Changing, Equivalence-Preserving Program Transformation System}
-\date{December 01, 2012}
+\date{February 11, 2013}
 \author{Bram Schuur \thanks{Msc. Thesis under supervision of Johan Jeuring and Sean Leather}}
 
 \hfuzz=15.002pt
@@ -86,7 +96,7 @@
 
 \chapter{Type and Transform Systems}
 \label{chap:tts}
-This chapter introduces the core concepts of type and transform systems. The first section gives two motivating examples of type-changing program transformations which will be used throughout this work. 
+This chapter introduces the core concepts of type and transform systems. The first section gives two motivating examples of type-changing program transformations which will be used throughout this work.
 \section{Motivating Examples}
 \label{sec:examples}
 %include chapters/examples.lhs
@@ -95,11 +105,11 @@ This chapter introduces the core concepts of type and transform systems. The fir
 \label{sec:tts}
 %include chapters/tts.lhs
 
-\chapter{Proof}
+\chapter{\texorpdfstring{|(TTS(stlc))|}{TTS stlc}  Preserves the Transformation Properties}
 \label{chap:proof}
 %include chapters/proof.lhs
 
-\chapter{Mechanical Proof}
+\chapter{Mechanical Proof of the Transformation Properties}
 \label{chap:mechanical}
 %include chapters/mechanical.lagda
 
@@ -109,6 +119,7 @@ This chapter introduces the core concepts of type and transform systems. The fir
 
 \chapter{Future work}
 \label{chap:future}
+%include chapters/future.lhs
 
 \chapter{Conclusion}
 \label{chap:conclusion}

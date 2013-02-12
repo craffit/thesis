@@ -16,7 +16,7 @@ open import Util.PropositionalEquality
 \end{code}
 %endif
 
-Before proving the fundamental Lemma we first establish the $\beta\eta$-closure and crossing lemma's over the logical relation. Because the type of the logical relation is dependent on the functor, there is no choice but to prove properties about by the logical relation by induction on the Typing functor. 
+Before proving the Fundamental Lemma we first establish the $\beta\eta$-closure and crossing lemma's over the logical relation. Because the type of the logical relation depends on the functor, there is no choice but to prove properties about the logical relation by induction on the typing functor. 
 
 \begin{code}
 rel-βη  : ∀ {φ Φ} {e e' : ⟦ φ ⟧φ C A ⊢ ⟦ Φ ⟧Φ C A} {f f' :  ⟦ φ ⟧φ R ⊢ ⟦ Φ ⟧Φ R}
@@ -32,10 +32,9 @@ rel-βη {φ} {Φ₁ ⟶ Φ₂}   s s' eq1 eq2 r =
       λ a a' ra →  rel-βη {φ} {Φ₂} s s' (eq1 %· □) (eq2 %· □) (r a a' ra)
 \end{code}
 
-The $\beta\eta$ closure is another good example of the Curry-Howard correspondence in action. In the proof of Chapter~\ref{chap:proof} we used sequences of implication to show the case for function space. In the Curry-Howard correspondence implication elimination becomes function application.
+The $\beta\eta$ closure proof is another good example of the Curry-Howard correspondence in action. In the proof of Chapter~\ref{chap:proof} we used sequences of implication to show the case for function space. In the Curry-Howard correspondence implication elimination becomes function application.
 
-For the crossing Lemma's we just show the types, which give an exact formal representation of the lemma. The logical equivalence of the crossing lemma is proving by mutual induction on the two directions the implication, in Agda we can model this by using a mutual block. Agda's termination checker will tell whether we have cyclic reasoning or not: if the construction of the proof term terminates, we have no cyclic reasoning, if it is proven using infinite recursion the reasoning was cyclic.
-
+For the Crossing Lemma we just show the types, which give an exact formal representation of the lemma. The logical equivalence of the crossing lemma is proven by mutual induction on the two directions of the implication, in Agda we can model this by using a mutual block. Agda's termination checker will tell whether we have cyclic reasoning or not: if the construction of the proof term terminates, we have no cyclic reasoning, if it is proven using infinite recursion the reasoning was cyclic.
 
 \begin{code}
 mutual
@@ -52,7 +51,12 @@ mutual
                → (a : ⟦ φ ⟧φ C A ⊢ ⟦ Φ' ⟧Φ C A) → (a' :  ⟦ φ ⟧φ R ⊢ ⟦ Φ' ⟧Φ R)
                → rel {φ , Φ'} {Φ} e e' (cls s a) (cls s' a') 
                → rel {φ} {Φ} (e / sub vz a) (e' / sub vz a') s s'
+\end{code}
 
+The entire proof for this lemma can be found in the sources.
+
+%if False
+\begin{code}
   rel-weak     : ∀ {φ Φ Φ'} → (e : ⟦ φ ⟧φ C A  ⊢ ⟦ Φ ⟧Φ C A) 
                → (e' :  ⟦ φ ⟧φ R ⊢ ⟦ Φ ⟧Φ R) 
                → (s : ⟦ φ ⟧φ C A ↓) → (s' : ⟦ φ ⟧φ R ↓) 
@@ -60,12 +64,6 @@ mutual
                → rel {φ} {Φ} e e' s s'
                → rel {φ , Φ'} {Φ} (wkTm vz e) (wkTm vz e') (cls s a) (cls s' a')
 
-\end{code}
-
-The entire proof for this lemma can be found in the sources.
-
-%if False
-\begin{code}
   cross-left {φ} {Id} e e' s s' a a' r =
     let open Relation.Binary.EqReasoning βηsetoid
            renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)

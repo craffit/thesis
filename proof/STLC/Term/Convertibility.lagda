@@ -58,7 +58,7 @@ data _βη-=>_ {Δ : Con} : {Γ : Con} → Γ => Δ → Γ => Δ → Set where
 \end{code}
 %endif
 
-Because the $\beta\eta$-convertibility relation is reflexive, symmetric and transitive, it gives rise to a setoid. In Agda this makes the relation eligible for use with the equational reasoninging module, which makes proving properties much more intuitive. As an example, the |ext| property shows that this formalization of the lambda calculus supports and the extensionality lemma.
+Because the $\beta\eta$-convertibility relation is reflexive, symmetric and transitive, it gives rise to a setoid. In Agda this makes the relation eligible for use with the equational reasoning module, which makes proving properties much more intuitive. As an example, the |ext| property shows that this formalization of the lambda calculus is extensional.
 
 \begin{code}
 βηsetoid : {Γ : Con} {σ : Ty} → Setoid _ _
@@ -183,11 +183,11 @@ _%/_ (eta {t = t}) s =
 %endif
 
 \begin{code}
-ext : ∀ {Γ σ τ} → (e e' : Γ ⊢ σ ⇒ τ) → weaken e · v 0 βη-≡ weaken e' · v 0
-    → e βη-≡ e'
+ext : ∀ {Γ σ τ} → (e e' : Γ ⊢ σ ⇒ τ) 
+    → weaken e · v 0 βη-≡ weaken e' · v 0 → e βη-≡ e'
 ext e e' eq =
-  let open Relation.Binary.EqReasoning βηsetoid
-          renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
+  let open  Relation.Binary.EqReasoning βηsetoid
+            renaming (_≈⟨_⟩_ to _⟷⟨_⟩_)
   in begin
        e
      ⟷⟨ bsym eta ⟩

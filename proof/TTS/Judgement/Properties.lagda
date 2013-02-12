@@ -28,18 +28,29 @@ id-v-eq (vs y) = ≡vs (id-v-eq y)
 
 ≡!_,_>↝_ : ∀ {φ Φ e e' f f'} → e ≡ e' → f ≡ f' → φ ∶ Φ ⊨ e ↝ f → φ ∶ Φ ⊨ e' ↝ f' 
 ≡! refl , refl >↝ v = v
+
+id↝  : ∀ {Γ τ} → (e : Γ ⊢ τ) 
+     → Γ ↑φ ∶ τ ↑Φ ⊨ ! ↑φ-≡Γ , ↑Φ-≡τ >⊢ e ↝ ! ↑φ-≡Γ , ↑Φ-≡τ >⊢ e
+id↝ (var v)  = ≡! ≡var (id-v-eq v) , ≡var (id-v-eq v) >↝ var (id-v v)
+id↝ (Λ y)    = lam (id↝ y)
+id↝ (y · y') = ≡! !,⊢-split-· y y' ↑φ-≡Γ ↑Φ-≡τ ↑Φ-≡τ , !,⊢-split-· y y' ↑φ-≡Γ ↑Φ-≡τ ↑Φ-≡τ >↝ app (id↝ y) (id↝ y')
+
+\end{code}
+
+%endif
+
+%if False
+\begin{code}
+{-
 \end{code}
 %endif
 
 \begin{code}
-id↝  : ∀ {Γ τ} → (e : Γ ⊢ τ) 
-     → Γ ↑φ ∶ τ ↑Φ ⊨ ! ↑φ-≡Γ , ↑Φ-≡τ >⊢ e ↝ ! ↑φ-≡Γ , ↑Φ-≡τ >⊢ e
+id↝  : ∀ {Γ τ} → (e : Γ ⊢ τ) → Γ ↑φ ∶ τ ↑Φ ⊨ e ↝ e
 \end{code}
 
 %if False
 \begin{code}
-id↝ (var v)  = ≡! ≡var (id-v-eq v) , ≡var (id-v-eq v) >↝ var (id-v v)
-id↝ (Λ y)    = lam (id↝ y)
-id↝ (y · y') = ≡! !,⊢-split-· y y' ↑φ-≡Γ ↑Φ-≡τ ↑Φ-≡τ , !,⊢-split-· y y' ↑φ-≡Γ ↑Φ-≡τ ↑Φ-≡τ >↝ app (id↝ y) (id↝ y')
+-}
 \end{code}
 %endif

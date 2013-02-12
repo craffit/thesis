@@ -10,9 +10,9 @@
 \DeclareUnicodeCharacter{10218}{$\langle!\langle$}          %%% ⟪
 \DeclareUnicodeCharacter{10219}{$\rangle!\rangle$}          %%% ⟫
 \DeclareUnicodeCharacter{10231}{$\leftrightarrow$}      
-\DeclareUnicodeCharacter{10239}{$\rightsquigarrow$}         %%% ⟿
-\DeclareUnicodeCharacter{8872}{$\vDash$}                  %%% ≔
-\DeclareUnicodeCharacter{8788}{$\coloneq$}                  %%% ≔
+%% \DeclareUnicodeCharacter{10239}{$\textbf{\rightsquigarrow}$}         %%% ⟿
+\DeclareUnicodeCharacter{8872}{$\mathlarger{\models}$}                  %%% ≔
+%% \DeclareUnicodeCharacter{8788}{$\mathbf{\coloneq}$}                  %%% ≔
 \DeclareUnicodeCharacter{8336}{${}_{\Varid{a}}$}            %%% ₐ
 \DeclareUnicodeCharacter{8339}{${}_{\Varid{x}}$}            %%% ₓ
 \DeclareUnicodeCharacter{7524}{${}_{\Varid{u}}$}            %%% ᵤ
@@ -128,6 +128,7 @@
 %format rel-weak = "\AIdent{rel-weak}"
 %format fundament = "\AIdent{fundament}"
 %format extract = "\AIdent{extract}"
+%fromat %close = "\AIdent{%close}"
 
 %format mplus = "\_\bullet\_ "
 %format `mplus` = "\bullet "
@@ -135,4 +136,22 @@
 %format mu = "\mu "
 %format beta = "\beta "
 %format eta = "\eta "
+
+%format _⊢_ = "\_\mathlarger{\mathbf{\vdash}}\_ "
+%format ⊢ = "\mathlarger{\mathbf{\vdash}} "
+
+%format abs-rep = "\AIdent{abs-rep}"
+%format m-rel = "\AIdent{m-rel}"
+%format proofs = "\AIdent{proofs}"
+%format proof = "\AIdent{proof}"
+%format trans = "\AIdent{trans}"
+%format relΓ = "\AIdent{relΓ}"
+%format equivalence = "\AIdent{equivalence}"
+%format ε = "\AIdent{ε}"
+
+%format rel-βη = "\AIdent{rel-βη}"
+%format proof₁ = "\AIdent{proof₁}"
+%format trans₁ = "\AIdent{trans₁}"
+
+%format strengthen = "\AIdent{strengthen}"
 \renewcommand\Conid[1]{\text{\textbf{#1}}}

@@ -12,9 +12,9 @@
 %format (rep_(x)) = "\textbf{rep}_{" x "}"
 %format (abs_(x)) = "\textbf{abs}_{" x "}"
 
-%format tyA = "\mathfrak{A}"
-%format tyR = "\mathfrak{R}"
-%format tyI = "\iota"
+%format tyA = "\mathcal{A}"
+%format tyR = "\mathcal{R}"
+%format tyI = "\mathbf{\iota}"
 
 %format `rw`   = "\rightsquigarrow "
 %format `nrw`  = "\mathbin{\overlay\diagup\rightsquigarrow} "
@@ -27,7 +27,7 @@
 
 %format sch = "\sigma "
 %format schF = "\mathring{\sigma} "
-%format pC = "\mathfrak{C} "
+%format pC = "\mathcal{C} "
 
 %format env = "\Gamma "
 %format (env_(x)) = "\Gamma{" x "}"
@@ -40,6 +40,7 @@
 %format (int(x)) = "\llbracket " x "\rrbracket"
 %format (int_(x)(y)) = "\llbracket " x "\rrbracket_{" y "}"
 
+%format +-        = "\vdash"
 %format `stlc`    = "\:\vdash_{\lambda}\:"
 %format stlc      = "\lambda "
 %format `lt`      = "\:\vdash_{let}\:" 
@@ -51,6 +52,7 @@
 %format `ret`  = "\vartriangleleft "
 %format `iso`  = "\cong "
 %format `to`   = "\mapsto "
+%format `and`  = "\wedge "
 %format (eval(x)) = x "\downarrow"
 
 %format (rel1(x)(y)) = "\llbracket " x "\rrbracket_{" y "}"
@@ -65,8 +67,8 @@
 
 %format (closure(x)) = x "\downarrow "
 %format (tosub(x)) = x "\downarrow^{*} "
-%format (close(x)(y)) = x "\:@\: " y
-%format (subst(x)(y)) = x "\:@\:" y
+%format (close(x)(y)) = x "\:/\: " y
+%format (subst(x)(y)) = x "\:/\:" y
 %format , = "\ ,\ " 
 
 %format (lift(x)) = x "\uparrow "

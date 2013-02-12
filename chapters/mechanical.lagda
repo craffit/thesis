@@ -1,8 +1,14 @@
 %include ../formatting/agda.fmt
 
+Proving properties about the programs we write increases our trust in the reliability of our software. Although a pen-and-paper proof usually suffices to prove properties, it is still possible to make errors. In recent years it has become more common to prove parts of software systems with the use of theorem provers. To take this one step further, the POPLmark~\cite{poplmark} challenge has set its goal to mechanically verify all meta-theory of programming languages.
+
+In this light, we have verified the |(TTS(stlc))| transformation system in the dependently type programming language Agda~\cite{norell07}. Agda is a programming language which can be used for theorem proving and is based on constructive mathematics. We have chosen Agda as proof-assistant because it supports universe polymorphism, clean syntax through the use of mixfix operators and parametrized modules.
+
+This chapter will give an overview of how the transformation system is represented in Agda and how the transformation properties are mechanically verified. The proof relies on the validity of the Curry-Howard correspondence, which will be introduced in Section~\ref{sec:mechanical-properties}. The source code can be found on GitHub~\cite{source} for the interested reader.
+
 \section{STLC object language}
 
-Fundamental to a mechanical formalization of the TTS system is the representation of the object language, STLC. STLC can be represented in multiple ways, as described in~\cite{keuchel11}. The essential choice is between a Higher Order Abstract Syntax and a de Bruijn representation. Although HOAS terms can be constructed in Agda, Agda is not strong enough to reason about semantic equivalence of HOAS terms, unlike other languages such as Twelf~\cite{schurmann08}. The representation chosen here is a first-order representation using well-typed de Bruijn indices as found in Keller and Altenkirch~\cite{keller10}. A first-order formulation is mandatory because it allows full inductive reasoning over terms and types in the object language and thus reasoning about the semantics. Formulating using well-typed de Bruijn indices is useful because it asserts important properties about the terms by construction.
+Fundamental to a mechanical formalization of the TTS system is the representation of the object language, STLC. STLC can be represented in multiple ways, as described in~\cite{keuchel11}. The essential choice is between a Higher Order Abstract Syntax and a de Bruijn representation, among others. Although HOAS terms can be constructed in Agda, Agda is not strong enough to reason about semantic equivalence of HOAS terms, unlike other languages such as Twelf~\cite{schurmann08}. The representation chosen here is a first-order representation using well-typed de Bruijn indices as found in Keller and Altenkirch~\cite{keller10}. A first-order formulation is mandatory because it allows full inductive reasoning over terms and types in the object language and thus reasoning about the semantics. Formulating using well-typed de Bruijn indices is useful because it asserts important properties about the terms by construction.
 
 \paragraph{De Bruijn indices} is a way to represent variables in languages based on the lambda calculus. Instead of naming a variable, a variable is given an index which denotes at which lambda the variable is bound. More precisely, the index denotes the number of lambdas that occur between the variable and its binding site. \emph{Well-typed} de Bruijn indices are an extension of this idea: each variable now has a type associated with its binding site. When a term contains free variables, a context is used to assign each free variable a type and a binding place. Types and contexts are defined in the following way:
 
@@ -84,17 +90,17 @@ Combined with Agda's mix-fix syntax, this yields a relatively clutter-free metho
 
 \paragraph{Transformation rules}
 
-There is a bit of room in the design space as to how represent transformation rules. In this version of the type and transform system a simple dictionary of transformable terms is used. Chapter~\ref{chap:extensions} discusses more possibilities for extension.
+There is a bit of room in the design space as to how represent transformation rules. In this version of the type and transform system a simple dictionary of transformable terms is used.
 
 %include ../proof/TTS/Rules/Base.lagda
 
-The |Rules| datatype is list of transformation terms. A |Rule| indexes a rule in this list. Note that only closed terms can be transformed using this formulation, this makes the transformations context-insensitive.
+The |Rules| datatype is a list of transformation terms. A |Rule| indexes a rule in this list. Note that only closed terms can be transformed using this formulation, this makes the transformations context-insensitive.
 
 \section{Properties}
 \label{sec:mechanical-properties}
-We will now mechanically show that the defined system adheres to the desired transformation properties of Section~\ref{sec:tts}. This proof is follows the same structure as the 'pen-and-paper' proof from Chapter~\ref{chap:proof} and relies on the Curry-Howard correspondence for its validity.
+We will now mechanically show that the defined system adheres to the desired transformation properties of Section~\ref{sec:tts}. This proof follows the same structure as the 'pen-and-paper' proof from Chapter~\ref{chap:proof} and relies on the Curry-Howard correspondence for its validity.
 
-\paragraph{Curry-Howard Correspondence} The Curry Howard correspondence is the notion that there exists a direct connection between types in a programming language and propositions in classical, predicate and intuitionistic logic. This correspondence makes it possible to construct proofs as programs: providing an implementation program for a given type corresponds to proving that same logical property. According to the Curry-Howard correspondence, implication in logic has a direct relation to function space in programming languages, and universal quantification is related to dependent function space. Sum types and product types have a direct relation to disjunction and conjunction. In this way the Curry-Howard correspondence makes it possible to mechanically prove logical properties in a programming language, a feature that is put to good use in this section.
+\paragraph{Curry-Howard Correspondence} The Curry Howard correspondence is the notion that there exists a direct connection between types in a programming language and propositions in classical, predicate and intuitionistic logic. This correspondence makes it possible to construct proofs as programs: providing an implementation program for a given type corresponds to proving the corresponding logical property. According to the Curry-Howard correspondence, implication in logic has a direct relation to function space in programming languages, and universal quantification is related to dependent function space. Sum types and product types have a direct relation to disjunction and conjunction. In this way the Curry-Howard correspondence makes it possible to mechanically prove logical properties in a programming language, a feature that is put to good use in this section.
 
 \subsection{Typing property}
 The TTS typing property does not need any further proving but is inherent in the construction of the whole system. Terms are type-correct by construction using the well-typed De Bruijn indices and the transformation relation is indexed by two terms which derive a valid type from the typing functor. 
@@ -103,14 +109,14 @@ The TTS typing property does not need any further proving but is inherent in the
 
 %include ../proof/TTS/Judgement/Properties.lagda
 
-The typing functor and functor context of the identity transformation are the lifted version of the base type and context. The function |! ↑φ-≡Γ , ↑Φ-≡τ >⊢ e| shows Agda that the interpretation of a lifted type, is equal to the base type.
+The typing functor and functor context of the identity transformation are the lifted version of the base type and context.
 
-This shows clearly how implication in logic in connected to function space in a programming language. The statement: the existence of a valid term implies the existence of a transformation for that term, is transformed into showing that a function exists which constructs a transformation out of a term. 
+This shows clearly how implication in logic is connected to function space in a programming language. The statement: the existence of a valid term implies the existence of a transformation for that term, is transformed into showing that a function exists which constructs a transformation out of a term. 
 
 \subsection{Semantic equivalence}
-The Agda formalization of the equivalence proof strictly follows the proof structure as described in Chapter~\ref{chap:proof}. The first challenge is to find a suitable Agda representation for the logical relation.
+The Agda formalization of the equivalence proof strictly follows the proof structure as described in Chapter~\ref{chap:proof}. The first challenge is to find a suitable Agda representation for the logical relation. The representation used here was inspired by the work of Swierstra~\cite{swierstra12}, who uses a unary logical relation to prove termination of the simply typed lambda calculus in Agda.
 
-\paragraph{Logical relation} To construct the logical relation we can make good use of dependent types: the relation constructs a different type for different Functor constructs. For base types it constructs a $\beta\eta$ equivalence and for function space it constructs an implication in the form of a normal Agda function.
+\paragraph{Logical relation} To construct the logical relation we can make good use of dependent types: the relation constructs a different type for the different |Functor| constructors. For base types it constructs a $\beta\eta$ equivalence and for function space it constructs an implication in the form of a normal Agda function.
 
 %include ../proof/TTS/Relation/Base.lagda
 
@@ -122,20 +128,43 @@ The Agda formalization of the equivalence proof strictly follows the proof struc
 
 |Rel↓| is indexed by the closing environments it relates. For each two respective terms in the environment a witness |w| is evidence of the fact that both terms are related.
 
-\paragraph{Relating transformation rules} A type and transform transformation is only semantics preserving if the transformation rules preserve the equivalence between the types. This is done by showing that transformed terms are members of the logical relation, and is witnessed by the following construction:
+\paragraph{Relating transformation rules} A type and transform transformation is only semantics preserving if the additional transformation rules preserve the transformation equivalence property. This is witnessed by the following construction, which establishes that each transformation rule in a rule set preserves the logical relation.
 
 %include ../proof/TTS/Rules/Proof.lagda
+
+\paragraph{Equivalence proof}
+We can now give give a formal proof of the Equivalence transformation property for |(TTS(stlc))|. The proofs in this paragraph are slightly simplified by removing some of the book-keeping which is typical of proofs in intensional type theory. In intensional type theory every commutation between operators or equivalence has to be explicitly applied. The complete proofs can be found in the sources.
 
 %include ../proof/TTS/Properties.lagda
 
 \section{Monoid Transformation}
-Because the object language used for mechanically proving |(TTS(stlc))| is rather simple, it is not possible to express Hughes' strings transformation in this framework. However, it is possible to prove a more general transformation of which Hughes' strings is an instantiation: the monoid transformation.
+Because the object language used for mechanically proving |(TTS(stlc))| does not specify how types can be inhibited, it is not possible to express Hughes' strings transformation in this framework. However, it is possible to prove a more general transformation of which Hughes' strings is an instantiation: the monoid transformation.
 
 A monoid is a mathematical structure consisting of a type |S| and a binary operation |mplus :: S -> S -> S| and an identity |mzero :: S|, which adhere to the following laws:
 
 > Associativity:  forall a b c. a `mplus` (b `mplus` c) `beq` (a `mplus` b) `mplus` c 
 > Identity:       forall a. a `mplus` mzero `beq` mzero `mplus` a `beq` a
 
-It is not difficult to see that |(++)| and |""| form a monoid for |String|s. We can construct a transformation for monoids which will make sure that all applications of the monoid are \emph{right-associative}, exactly what is being done in Hughes' string transformation.
+It is not difficult to see that |(++)| and |""| form a monoid for |String|s. We can construct a transformation for monoids which will make sure that all applications of the |mplus| function are \emph{right-associative}, exactly what is being done in Hughes' string transformation.
 
 %include ../proof/TTS/Monoid.lagda
+
+\newpage
+
+\section{Discussion}
+
+\paragraph{Extensionality}
+The equivalence proof shows that the source and result term from a complete type and transform deduction are $\beta\eta$-equivalent \emph{for all possible substitutions}. Earlier we have seen that the simply typed lambda calculus is extensional: if two terms are equivalent for all possible inputs, we can treat those two terms as equal. Thus we should not only be able to deduce that the terms are equal 'up to substitution', but we should be able to deduce a direct equivalence:
+
+> strengthen  : ∀ {Γ n} → (e e' : Γ ⊢ C n) → (s : Γ ↓) 
+>             → close e s βη-≡ close e' s → e βη-≡ e'
+
+Although this is a valid statement, it is not possible to prove this directly Agda. Agda does not support a general extensionality lemma, and thus we can not simply deduce the equivalence, although it is correct in this particular case of the simply typed lambda calculus.
+
+\paragraph{Structural Logical Relations}
+One way out of this would be to construct a separate, more restrictive logic in which extensionality does hold. This is the approach taken by Schürmann and Sarnat~\cite{schurmann08}. They use logical relations to prove properties about the simply typed lambda lambda calculus in Twelf. To overcome the limits of Twelf's logic they express the logical relation in a \emph{separate logic} defined within Twelf. This separate logic is carefully constructed to hold properties which are not true in Twelf in general. They call this approach structural logical relations.
+
+This same approach can be taken here. Instead of expressing the logical in Agda itself, it can be expressed in a stronger (limited) logic defined \emph{within} Agda, which preserves extensionality. 
+
+\paragraph{Extended types}
+This approach may also be used prove or disprove a bit more liberal version of the type and transform system. We strongly suspect that the transformation equivalence property does not only hold for terms with \emph{base types} but for hole-free types in general, including function types. However, the logical relation uses Agda's function space to relate function types and it is not possible to eliminate function space without an argument in a language which has no extensionality lemma. The approach of Structural logical relations might be a solution to this.

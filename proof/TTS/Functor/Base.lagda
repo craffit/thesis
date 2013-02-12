@@ -54,5 +54,34 @@ _↓τ : ∀ {Φ} → Φ ↓Φ → Ty
 ↓Φ-≡τ {a} {C .y} {C y} = C y
 ↓Φ-≡τ {a} {Φ₁ ⟶ Φ₂} {v ⟶ v'} = ↓Φ-≡τ ⇒ ↓Φ-≡τ
 
+open import Relation.Nullary
+open import Relation.Binary using (Decidable)
+open import Relation.Binary.PropositionalEquality
+
+inj-CΦ : ∀ {a b} → _≡_ {A = Functor} (C a) (C b) → a ≡ b
+inj-CΦ refl = refl
+
+inj-⟶-left : ∀ {Φ₁ Φ₂ Φ' Φ''} → _≡_ {A = Functor} (Φ₁ ⟶ Φ₂) (Φ' ⟶ Φ'') → Φ₁ ≡ Φ'
+inj-⟶-left refl = refl --refl
+
+inj-⟶-right : ∀ {Φ₁ Φ₂ Φ' Φ''} → _≡_ {A = Functor} (Φ₁ ⟶ Φ₂) (Φ' ⟶ Φ'') → Φ₂ ≡ Φ''
+inj-⟶-right refl = refl
+
+_≟Φ_ : Decidable {A = Functor} _≡_
+Id ≟Φ Id = yes refl
+Id ≟Φ C A = no (λ ())
+Id ≟Φ (Φ₁ ⟶ Φ₂) = no (λ ())
+C A ≟Φ Id = no (λ ())
+C A ≟Φ C A' with A ≟ A'
+C A ≟Φ C A' | yes p = yes (cong C p)
+C A ≟Φ C A' | no ¬p = no (λ p → ¬p (inj-CΦ p))
+C A ≟Φ (Φ₁ ⟶ Φ₂) = no (λ ())
+(Φ₁ ⟶ Φ₂) ≟Φ Id = no (λ ())
+(Φ₁ ⟶ Φ₂) ≟Φ C A = no (λ ())
+(Φ₁ ⟶ Φ₂) ≟Φ (Φ₁' ⟶ Φ₂') with Φ₁ ≟Φ Φ₁' | Φ₂ ≟Φ Φ₂'
+(Φ₁ ⟶ Φ₂) ≟Φ (Φ₁' ⟶ Φ₂') | yes p | yes p' = yes (cong₂ _⟶_ p p')
+(Φ₁ ⟶ Φ₂) ≟Φ (Φ₁' ⟶ Φ₂') | yes p | no ¬p  = no (λ x → ¬p (inj-⟶-right x))
+(Φ₁ ⟶ Φ₂) ≟Φ (Φ₁' ⟶ Φ₂') | no ¬p | yes p  = no (λ x → ¬p (inj-⟶-left x))
+(Φ₁ ⟶ Φ₂) ≟Φ (Φ₁' ⟶ Φ₂') | no ¬p | no ¬p' = no (λ x → ¬p (inj-⟶-left x))
 \end{code}
 %endif

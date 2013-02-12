@@ -14,12 +14,16 @@ The typing functor of |(TTS(stlc))| is essentially an extension of the base type
 
 > tyF    ::= T | Id | a | tyF -> tyF
 > schF   ::= forall a. schF | tyF
-> envF   ::= envF , schF | empty
+> envF   ::= envF, x : schF | empty
 > sbstF  ::= [a `to` tyF] `comp` sbstF | id
 
-Hindley-Milner typing prescribes two functions which can be used to introduce and eliminate quantification, |gen :: env -> ty -> sch| and |inst :: sch -> sbst -> ty|. Generalize quantifies over all type variables in |ty| except the variables which occur free in the environment |env|. |inst| creates a normal type from a schema and a substitution |sbst| for all quantified variables. These function can be straightforwardly extended to typing functors by treating the |Id| construct as a normal base type in both functions.
+Hindley-Milner typing prescribes two functions which can be used to introduce and eliminate quantification, |gen :: env -> ty -> sch| and |inst :: sch -> sbst -> ty|. |gen| quantifies over all type variables in |ty| except the variables which occur free in the environment |env|. |inst| creates a normal type from a schema and a substitution |sbst| for all quantified variables. These function can be straightforwardly extended to typing functors by treating the |Id| construct as a normal base type in both functions.
 
-Figure~\ref{fig:letrules} shows the typing rules for the let-polymorphic lambda calculus and the corresponding transformation rules for |(TTS(let))|, the core transformation system. The extension is again a straightforward extension of the basic Hindley-Milner typing rules. Proving this transformation correct however is more difficult.
+The terms in the let-polymorphic lambda calculus are extended with a |let| construct which guides generalization and instantiation, this gives the following term definitions:
+
+> e    ::= x | c | e e | \x. e | let x = e in e'
+
+Figure~\ref{fig:letrules} shows the typing rules for the let-polymorphic lambda calculus and the corresponding transformation rules for |(TTS(let))|, the core transformation system. This extension is again a straightforward extension of the basic Hindley-Milner typing rules. Proving this transformation correct however is more difficult.
 
 \begin{figure}[t]
 \begin{tabular}{l r c l r}
@@ -33,7 +37,7 @@ Figure~\ref{fig:letrules} shows the typing rules for the let-polymorphic lambda 
 \\
 |Tr-Var|
 &\inferrule{|x : schF `elem` envF|}
-           {|envF `lt` x `rw` x : instF(schF, sub)|}
+           {|envF `lt` x `rw` x : instF(schF, sbstF)|}
 &\quad
 &\inferrule{|x : sch `elem` env|}
            {|env `lt` x : inst(sch, sbst)|}
@@ -84,9 +88,7 @@ Figure~\ref{fig:letrules} shows the typing rules for the let-polymorphic lambda 
 \label{fig:letrules}
 \end{figure}
 
-\begin{comment}
-\paragraph{Proof} Because the typing language of |(TTS(let))| is extended with variables and quantification, the logical relation needs to deal with those typing constructs as well. 
-\end{comment}
+Informally we reason that, although the language now contains polymorphism, the type and transform system only makes changes to the base types. Thus, type variables will be left alone during transformation. Type instantiations can now also instantiate to the hole type, but this is no problem because a polymorphic function can be instantiated with any type.
 
 \section{Including a fixpoint}
 Although the simply typed lambda calculus serves well as a foundation for a typed program transformation system, it has one important shortcoming: it is not Turing complete. A language needs some form of unbridled recursion to become Turing complete. A well-known construct for recursion is the fixpoint. A fixpoint works by taking a function and turning it into a possibly infinite self-application. An example of a fixpoint is the Y combinator, but other variants exist as well.
@@ -114,7 +116,7 @@ Because |fix| is a primitive function, it has a separate convertibility rule, $\
 >   mu     : ∀ {τ} → {f : Γ ⊢ τ ⇒ τ} → fix f βη-≡ f · fix f
 >   %fix   : ∀ {τ} → {f f' : Γ ⊢ τ ⇒ τ} → f βη-≡ f' -> fix f βη-≡ fix f'
 
-While this seems like a straightforward enough extension to the basic |(TTS(stlc))| system, the fixpoint has some implications on the semantics of a language, and thus on the way proofs are conducted for that language. 
+While this seems like a straightforward enough extension to the basic |(TTS(stlc))| system, the fixpoint has some implications on the semantics of a language, and thus on the way proofs are conducted for that language.
 
 \paragraph{Impact on evaluation}
 The main problem is that a fixpoint introduces possibly infinite recursion: divergent terms. This means that, next to the normal values which a term can produce, a term can also produce $\bot$: no value at all! In such a language, the order of evaluation becomes important.

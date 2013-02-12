@@ -15,7 +15,7 @@ infixl 5 _-φ_
 \end{code}
 %endif
 
-A functor context is basically the same as a normal context, only containing functors. The accompanying interpretaion and lifting funcitons are equaly straightforward.
+A functor context is basically the same as a normal context, only containing functors. The accompanying interpretation and lifting functions are equally straightforward.
 
 \begin{code}
 data Ftx : Set where
@@ -80,6 +80,25 @@ wkv∋φ : ∀ {φ Φ Φ'} → (x : φ ∋φ Φ') → φ -φ x ∋φ Φ → φ �
 wkv∋φ vz     y       = vs y
 wkv∋φ (vs x) vz      = vz
 wkv∋φ (vs x) (vs y)  = vs (wkv∋φ x y)
+
+open import Relation.Nullary
+open import Relation.Binary using (Decidable)
+
+inj-,-left : ∀ {φ φ' Φ Φ'} → _≡_ {A = Ftx} (φ , Φ) (φ' , Φ') → φ ≡ φ'
+inj-,-left refl = refl
+
+inj-,-right : ∀ {φ φ' Φ Φ'} → _≡_ {A = Ftx} (φ , Φ) (φ' , Φ') → Φ ≡ Φ'
+inj-,-right refl = refl
+
+_≟φ_ : Decidable {A = Ftx} _≡_
+ε ≟φ ε = yes refl
+ε ≟φ (φ , Φ) = no (λ ())
+(φ , Φ) ≟φ ε = no (λ ())
+(φ , Φ) ≟φ (φ' , Φ') with φ ≟φ φ' | Φ ≟Φ Φ'
+(φ , Φ) ≟φ (φ' , Φ') | yes p | yes p' = yes (cong₂ _,_ p p')
+(φ , Φ) ≟φ (φ' , Φ') | yes p | no ¬p  = no (λ x → ¬p (inj-,-right x))
+(φ , Φ) ≟φ (φ' , Φ') | no ¬p | yes p  = no (λ x → ¬p (inj-,-left x))
+(φ , Φ) ≟φ (φ' , Φ') | no ¬p | no ¬p' = no (λ x → ¬p (inj-,-left x))
 
 {-
 -↝dist≡ :  ∀ {φ Φ} → (x : φ ∋↝ Φ) → Ty → Set

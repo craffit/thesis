@@ -2,30 +2,21 @@ Looking closely at the previous two examples, we can see a transformation patter
 
 Type and transform systems are a formalization of this transformation pattern. In this section, the core concepts of this formalization will be introduced.
 
-\subsection{Transformation properties} 
+\subsection{Transformation properties}
 \label{subsec:properties}
 Before developing a transformation system, it useful to formalize some overall properties that we want a transformation system to uphold. Type and transform systems are intended to maintain the following properties for its transformations:
 
-%% Command for labelled items
-
-\makeatletter
-\def\namedlabel#1#2{\begingroup
-   \def\@@currentlabel{#2}%
-   \phantomsection\label{#1}\endgroup
-}
-\makeatother
-
 \begin{enumerate}
-  \item[\textbf{Productive} \namedlabel{prop:productive}{1}] Transformation is always possible
-  \item[\textbf{Sound}      \namedlabel{prop:types}{2}]      The source and result program have equal types
-  \item[\textbf{Equivalence}\namedlabel{prop:semantics}{3}]  The source and result program are semantically equivalent
+  \item[\textbf{Sound}      \namedlabel{prop:types}{1}]      The source and result program have equal types
+  \item[\textbf{Equivalence}\namedlabel{prop:semantics}{2}]  The source and result program are semantically equivalent
+  \item[\textbf{Productive} \namedlabel{prop:productive}{3}] A transformation yields a result for all possible inputs
 \end{enumerate}
 
-Note that property \ref{prop:types} does not exclude changes of types within a program. The complete program after transformation should have the same type as the original, but the types may have been changed with the subterms. Or in other words: the resulting types remain the same, but the \emph{typing derivation} may differ. In the same manner property \ref{prop:semantics} requires only the complete programs to be semantically equivalent but says nothing about the semantics of its sub-terms. This is consistent with the example transformations: Locally the types and terms have been changed, but the overall type and semantics have remained the same.
+Note that property the soundness does not exclude changes of types within a program. The complete program after transformation should have the same type as the original, but types may have been changed within the subterms. In other words: the resulting types remain the same, but the \emph{typing derivation} may differ. In the same manner the equivalence property requires only the complete programs to be semantically equivalent but says nothing about the semantics of its sub-terms. This is consistent with the example transformations: Locally the types and terms have been changed, but the overall type and semantics have remained the same.
 
 Furthermore, this implies that the source program has to be well-typed to be eligible for transformation. The transformation should also provably produce a type-correct program as a result.
 
-To get a feeling for what could be a valid TTS transformation, consider the following example transformations:
+To get a feeling for what could be a valid transformation, consider the following example transformations:
 
 \begin{figure}[H]
 \begin{align}
@@ -50,9 +41,9 @@ The |`rw`| symbol is used to denote a valid transformation from some program to 
 Looking at the stream fusion and Hughes' strings examples we see that in both cases only one type is being changed. For Hughes' strings transformation, strings are changed to string continuations and with stream fusion lists are changed to streams. We will restrict the TTS system to only changing one base type in the source program to one different type in the resulting program. The type within the source program is denoted by |tyA|, the type in the result program by |tyR|. These source and result types are required to form a \emph{retract}, written as |tyA `ret` tyR|. Two types form a retract when there exists a pair of functions, |rep :: tyA -> tyR| and |abs :: tyR -> tyA|, for which |abs| is the left inverse of |rep|, meaning that |abs `comp` rep == id|. Both Hughes' strings and the stream fusion functions |rep| and |abs| have this property.
 
 \subsection{Object Language}
-A TTS can be built for many different programming languages. The language a TTS is designed for is called the object language. However, not every language is suitable as object language. TTS property~\ref{prop:types} requires the object language to be strongly typed. Also, in order to be able to relate the semantics of the source and result of a transformation, the object language should come with an equivalence relation for the semantics of its terms. 
+A TTS can be built for many different programming languages. The language a TTS is designed for is called the object language. However, not every language is suitable as object language. To assure the type soundness transformation property, the object language should have a strong type system. Also, in order to be able to relate the semantics of the source and result of a transformation, the object language should come with an equivalence relation for the semantics of its terms.
 
-One of the most simple languages which is suitable as a TTS object language is the simply typed lambda calculus. This language will be used to further introduce the core concepts of type and transform systems. Chapter~\ref{chap:extensions} handles TTS systems for object languages with more advanced features. 
+One of the most simple languages which is suitable as a TTS object language is the simply typed lambda calculus (stlc). This language will be used to further introduce the core concepts of type and transform systems. Chapter~\ref{chap:extensions} handles TTS systems for object languages with more advanced features.
 
 The terms and types of the simply typed lambda calculus are of the following form:
 
@@ -102,7 +93,7 @@ At the heart of each type and transform system there is a TTS relation. A TTS re
 
 > envF `stlc` e `rw` e' : tyF
 
-The resemblance with the original STLC typing judgement is obvious. Instead of one term, the relation now embodies two terms, the source and the result term. The |envF| and |tyF| constructions are similar to normal types and contexts, except that they type the source and the result term simultaneously. Such a modified type is called a \emph{typing functor} and the context is called a \emph{functor context}. Any variation in types between the source and result terms is embodied in the typing functor and functor context. 
+The resemblance with the original STLC typing judgement is obvious. Instead of one term, the relation now embodies two terms, the source and the result term. The |envF| and |tyF| constructions are similar to normal types and contexts, except that they type the source and the result term simultaneously. Such a modified type is called a \emph{typing functor} and the context is called a \emph{functor context}. Any variation in types between the source and result terms is embodied in the typing functor and functor context.
 
 \paragraph{Typing functor}
 The variation in types in |(TTS(stlc))| is limited to only changing one base type |tyA| from the source program into a type |tyR| in the transformation result. The typing functor allows such changes, while maintaining the invariant that both source and result terms are well-typed. The way this is achieved, is by extending the normal types of the object language with an 'hole' construction, represented by a $\iota$. This hole will represent the locations at which the types have changed during transformation. For STLC, the typing functor and functor context are defined as follows:
@@ -113,9 +104,9 @@ The variation in types in |(TTS(stlc))| is limited to only changing one base typ
 Along with the typing functor and context we define a function which turns a functor into a base type of the object language. This is done by filling in the hole type with some type argument. This interpretation function for the typing functor and context are defined as follows:
 
 > (int_(tyF)(ty)) : ty
-> (int_(ty)(ty))                      = ty
-> (int_(T)(ty))                       = T
-> (int_((tyF_(a)) -> (tyF_(r)))(ty))  = (int_(tyF_(a))(ty)) -> (int_(tyF_(r))(ty))
+> (int_(tyI)(ty))                   = ty
+> (int_(T)(ty))                     = T
+> (int_(tyF_(a) -> (tyF_(r)))(ty))  = (int_(tyF_(a))(ty)) -> (int_(tyF_(r))(ty))
 
 > (int_(envF)(ty)) : env
 > (int_(empty)(ty))          = empty
@@ -131,7 +122,7 @@ The typing functor and context are an extension of normal types. Thus, normal ty
 > (lift(env))           = empty
 > (lift(env , a : ty))  = (lift(env)) , a : (lift(ty))
 
-If a typing functor or context contains no holes we call it \emph{complete}. Note that when a typing functor is complete, it is actually just an ordinary type in the object language, lifted to a functor. 
+If a typing functor or context contains no holes we call it \emph{complete}. Note that when a typing functor is complete, it is actually just an ordinary type in the object language, lifted to a functor.
 
 We can now construct some well-typed transformation examples for Hughes' strings as members of the TTS relation. The hole type is inserted at places where the type |String| in the source term is replaced by the type |String -> String| in the result term. Thus the hole type reflects a change in types.
 
@@ -141,7 +132,7 @@ We can now construct some well-typed transformation examples for Hughes' strings
 |empty `stlc` "aap"| &|`rw`| |(rep_(ss)) "aap"| && |: tyI| \notag \\
 |empty `stlc` (++)|  &|`rw`| |`comp`| && |: tyI -> tyI -> tyI| \notag \\
 |empty `stlc` \x.x ++ "hoi"| &|`rw`| |\x.x `comp` (rep_(ss)) "hoi"| && |: tyI -> tyI| \notag  \\
-|empty, x : tyI `stlc` x ++ "hoi"| &|`rw`| |x `comp` (rep_(ss)) "hoi"| && |: tyI| \notag \\ 
+|empty, x : tyI `stlc` x ++ "hoi"| &|`rw`| |x `comp` (rep_(ss)) "hoi"| && |: tyI| \notag \\
 |empty `stlc` "aap" ++ "hoi"| &|`rw`| |(abs_(ss)) ((rep_(ss)) "aap" `comp` (rep_(ss)) "hoi")| && |: String| \notag \\
 |empty `stlc` "aap"| &|`rw`| |(abs_(ss)) ((rep_(ss)) "aap")| && |: String| \notag
 \end{align}
@@ -234,7 +225,7 @@ In the previous sections a basic transformation system is presented which define
 
 > e `rw` abs (rep (abs (rep e)))
 
-This is hardly an optimizing program transformation! Even worse, the system allows endless chains of |abs| and |rep| applications, thus allowing infinite deduction trees. The reason that such endless chains can occur is because the rules of |(TTS(stlc))| are not \emph{syntax directed}. In a normal typing derivation for the simply typed lambda calculus, the derivation tree is uniquely determined by the term that is being typed. However, in the |(TTS(stlc))| system this is not the case. Multiple results are possible for the same input. 
+This is hardly an optimizing program transformation! Even worse, the system allows endless chains of |abs| and |rep| applications, thus allowing infinite deduction trees. The reason that such endless chains can occur is because the rules of |(TTS(stlc))| are not \emph{syntax directed}. In a normal typing derivation for the simply typed lambda calculus, the derivation tree is uniquely determined by the term that is being typed. However, in the |(TTS(stlc))| system this is not the case. Multiple results are possible for the same input.
 
 Thus program transformation becomes a form of proof search: Given an input program, try to find a valid |(TTS(stlc))| derivation. While one can always create an identity transformation (do nothing), this would not result in any improvements. One wants to find a transformation which gives as much optimization as possible, while avoiding unnecessary application of |abs| and |rep|.
 

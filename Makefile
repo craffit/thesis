@@ -5,17 +5,23 @@
 # * latexmk: http://www.phys.psu.edu/~collins/software/latexmk/
 #
 
-.PHONY : thesis.pdf thesis.tex default thesis
+.PHONY : thesis.pdf thesis.tex default thesis presentation presentation.pdf presentation.tex
+
+all : thesis presentation
 
 thesis : 
 	lhs2TeX --agda thesis.lhs > thesis.tex
 	latexmk -pdf thesis.tex
+	
+presentation:
+	lhs2TeX --agda presentation.lhs -o presentation.latex
+	latexmk -pdf presentation.latex
 
 TARGET := thesis
 
 default : $(TARGET).pdf
 
-$(TARGET).pdf : $(TARGET).bib sites.bib
+$(TARGET).pdf : $(TARGET).bib
 
 #-------------------------------------------------------------------------------
 

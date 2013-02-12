@@ -7,7 +7,7 @@ One example of a type-changing program transformation is known as Hughes' lists 
 > []       ++ ys = ys
 > (x: xs)  ++ ys = x : (xs ++ ys)
 
-The running time of this function is dependent on the size of its first argument. The problem with this definition becomes clear when analyzing necessary computations in the following examples:
+The running time of this function is depends on the size of its first argument. The problem with this definition becomes clear when analyzing necessary computations in the following examples:
 
 > s1, s2, s3, s4 :: [Char]
 > s1 = "aap" ++ ("noot" ++ "mies")

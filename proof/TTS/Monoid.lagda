@@ -11,7 +11,7 @@ open import Util.PropositionalEquality
 \end{code}
 %endif
 
-The monoid transformation is parametrized is parametrized by a monoidal structure: A type, the two operations and the accompanying laws. For this transformation we actually only need the right-identity of the mplus operation, so it is a bit more liberal than a normal monoid.
+The monoid transformation is parametrized by a monoidal structure: A type, the two operations and the accompanying laws. For this transformation we only need the right-identity of the |mplus| operation, so it is a bit more liberal than a normal monoid.
 
 \begin{code}
 module TTS.Monoid  (A : ℕ) (mzero : ε ⊢ C A)
@@ -23,7 +23,7 @@ module TTS.Monoid  (A : ℕ) (mzero : ε ⊢ C A)
                                     →  up mplus · e · up mzero βη-≡ e) where
 \end{code}
 
-Based on this monoid the ingredients for the transformation can be defined. The representation type |R| is constructed as a function over the monoidal type, analogous to Hughes' strings, the |abs| and |rep| function ae constructed accordingly. The transformation has just one rule which converts the binary operator into function composition.
+Based on this monoid the ingredients for the transformation can be defined. The representation type |R| is constructed as a function over the monoidal type, analogous to Hughes' strings, the |abs| and |rep| function are constructed accordingly. The transformation has just one rule which converts the binary operator into function composition.
 
 \begin{code}
 R : Ty
@@ -43,7 +43,7 @@ open TTS.Judgement.Base A R rep abs rules
 
 \end{code}
 
-This gives rise to a basic type and transform system for monoids. To show that this transformation actually preserves the  semantics, we have to show that the |abs| and |rep| function form a retraction, and that the |mplus| to |`comp`| transformation preserves the logical relation.
+This gives rise to a basic type and transform system for monoids. To show that this transformation preserves the  semantics, we have to show that the |abs| and |rep| function form a retraction, and that the |mplus| to |`comp`| transformation preserves the logical relation.
 
 \begin{code}
 abs-rep : abs ∘ rep βη-≡ id
@@ -71,7 +71,7 @@ open TTS.Rules.Proof A R rep
 \end{code}
 %endif
 
-The logical relation contains only base types. Proving can thus be done using equational reasoning.
+The rule for transforming |mplus| to |comp| has the functor type |Id -> Id -> Id|. The logical relation for this type expands to a function expecting and resulting in $\beta\eta$-equivalences. Proving can thus be done using equational reasoning.
 
 \begin{code}
 m-rel : rel {ε} {Id ⟶ Id ⟶ Id} mplus comp ε ε
@@ -114,7 +114,7 @@ open TTS.Properties A R rep abs rules
 open TransformationProof abs-rep proofs
 \end{code}
 
-We can use this to show the equivalence of transformed terms.
+We can use this to directly show the equivalence of transformed terms.
 
 \begin{code}
 trans₁ : (ε , C A) ∶ C A  ⊨ up mplus · v 0 · v 0
@@ -123,21 +123,42 @@ trans₁ = i-abs (app (app (rule (rule ε)) (i-rep (var vz))) (i-rep (var vz)))
 
 proof₁ : (s : (ε , C A) ↓)  →     close (up mplus · v 0 · v 0) s
                             βη-≡  close (up abs · (up rep · v 0 ∘ up rep · v 0)) s
-proof₁ =  extract {ε , C A} {A}
-    (up mplus · v 0 · v 0)
-    (up abs · (up rep · v 0 ∘ up rep · v 0))
-    (≡! sym (!,⊢-id (ε , C A) (C A) _) , sym (!,⊢-id (ε , C A) (C A) _) >↝ trans₁)
+
 \end{code}
 
 %if False
+\begin{code}  
+{-
+\end{code}
+%endif
+
 \begin{code}
+proof₁ = equivalence {ε , C A} {A}
+    (up mplus · v 0 · v 0)
+    (up abs · (up rep · v 0 ∘ up rep · v 0))
+    trans₁
+\end{code}
+
+%if False
+\begin{code}  
+-}
+\end{code}
+%endif
+
+%if False
+\begin{code}
+proof₁ = equivalence {ε , C A} {A}
+    (up mplus · v 0 · v 0)
+    (up abs · (up rep · v 0 ∘ up rep · v 0))
+    (≡! sym (!,⊢-id (ε , C A) (C A) _) , sym (!,⊢-id (ε , C A) (C A) _) >↝ trans₁)
+
 trans₂ : (ε , C A) ∶ C A  ⊨ (Λ (up mplus · v 1 · v 0)) · v 0
                           ↝ (up abs · (Λ (up rep · v 1 ∘ v 0) · (up rep · v 0)))
 trans₂ = i-abs (app (lam (app (app (rule (rule ε)) (i-rep (var (vs vz)))) (var vz))) (i-rep (var vz)))
 
 proof₂ : (s : (ε , C A) ↓)  →     close ((Λ (up mplus · v 1 · v 0)) · v 0) s
                             βη-≡  close (up abs · (Λ (up rep · v 1 ∘ v 0) · (up rep · v 0))) s
-proof₂ = extract {ε , C A} {A} ((Λ (up mplus · v 1 · v 0)) · v 0) (up abs · (Λ (up rep · v 1 ∘ v 0) · (up rep · v 0))) (≡! sym (!,⊢-id (ε , C A) (C A) _) , sym (!,⊢-id (ε , C A) (C A) _) >↝ trans₂)
+proof₂ = equivalence {ε , C A} {A} ((Λ (up mplus · v 1 · v 0)) · v 0) (up abs · (Λ (up rep · v 1 ∘ v 0) · (up rep · v 0))) (≡! sym (!,⊢-id (ε , C A) (C A) _) , sym (!,⊢-id (ε , C A) (C A) _) >↝ trans₂)
 
 \end{code}
 %endif
