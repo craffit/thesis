@@ -90,7 +90,7 @@ Combined with Agda's mix-fix syntax, this yields a relatively clutter-free metho
 
 \paragraph{Transformation rules}
 
-There is a bit of room in the design space as to how represent transformation rules. In this version of the type and transform system a simple dictionary of transformable terms is used.
+There is a bit of room in the design space as to how represent transformation rules. In this version of the type-and-transform system a simple dictionary of transformable terms is used.
 
 %include ../proof/TTS/Rules/Base.lagda
 
@@ -128,7 +128,7 @@ The Agda formalization of the equivalence proof strictly follows the proof struc
 
 |Rel↓| is indexed by the closing environments it relates. For each two respective terms in the environment a witness |w| is evidence of the fact that both terms are related.
 
-\paragraph{Relating transformation rules} A type and transform transformation is only semantics preserving if the additional transformation rules preserve the transformation equivalence property. This is witnessed by the following construction, which establishes that each transformation rule in a rule set preserves the logical relation.
+\paragraph{Relating transformation rules} A type-and-transform transformation is only semantics preserving if the additional transformation rules preserve the transformation equivalence property. This is witnessed by the following construction, which establishes that each transformation rule in a rule set preserves the logical relation.
 
 %include ../proof/TTS/Rules/Proof.lagda
 
@@ -138,6 +138,7 @@ We can now give give a formal proof of the Equivalence transformation property f
 %include ../proof/TTS/Properties.lagda
 
 \section{Monoid Transformation}
+\label{sec:monoid}
 Because the object language used for mechanically proving |(TTS(stlc))| does not specify how types can be inhibited, it is not possible to express Hughes' strings transformation in this framework. However, it is possible to prove a more general transformation of which Hughes' strings is an instantiation: the monoid transformation.
 
 A monoid is a mathematical structure consisting of a type |S| and a binary operation |mplus :: S -> S -> S| and an identity |mzero :: S|, which adhere to the following laws:
@@ -154,7 +155,7 @@ It is not difficult to see that |(++)| and |""| form a monoid for |String|s. We 
 \section{Discussion}
 
 \paragraph{Extensionality}
-The equivalence proof shows that the source and result term from a complete type and transform deduction are $\beta\eta$-equivalent \emph{for all possible substitutions}. Earlier we have seen that the simply typed lambda calculus is extensional: if two terms are equivalent for all possible inputs, we can treat those two terms as equal. Thus we should not only be able to deduce that the terms are equal 'up to substitution', but we should be able to deduce a direct equivalence:
+The equivalence proof shows that the source and result term from a complete type-and-transform deduction are $\beta\eta$-equivalent \emph{for all possible substitutions}. Earlier we have seen that the simply typed lambda calculus is extensional: if two terms are equivalent for all possible inputs, we can treat those two terms as equal. Thus we should not only be able to deduce that the terms are equal 'up to substitution', but we should be able to deduce a direct equivalence:
 
 > strengthen  : ∀ {Γ n} → (e e' : Γ ⊢ C n) → (s : Γ ↓) 
 >             → close e s βη-≡ close e' s → e βη-≡ e'
@@ -167,4 +168,4 @@ One way out of this would be to construct a separate, more restrictive logic in 
 This same approach can be taken here. Instead of expressing the logical in Agda itself, it can be expressed in a stronger (limited) logic defined \emph{within} Agda, which preserves extensionality. 
 
 \paragraph{Extended types}
-This approach may also be used prove or disprove a bit more liberal version of the type and transform system. We strongly suspect that the transformation equivalence property does not only hold for terms with \emph{base types} but for hole-free types in general, including function types. However, the logical relation uses Agda's function space to relate function types and it is not possible to eliminate function space without an argument in a language which has no extensionality lemma. The approach of Structural logical relations might be a solution to this.
+This approach may also be used prove or disprove a bit more liberal version of the type-and-transform system. We strongly suspect that the transformation equivalence property does not only hold for terms with \emph{base types} but for hole-free types in general, including function types. However, the logical relation uses Agda's function space to relate function types and it is not possible to eliminate function space without an argument in a language which has no extensionality lemma. The approach of Structural logical relations might be a solution to this.

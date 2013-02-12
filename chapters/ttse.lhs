@@ -88,7 +88,7 @@ Figure~\ref{fig:letrules} shows the typing rules for the let-polymorphic lambda 
 \label{fig:letrules}
 \end{figure}
 
-Informally we reason that, although the language now contains polymorphism, the type and transform system only makes changes to the base types. Thus, type variables will be left alone during transformation. Type instantiations can now also instantiate to the hole type, but this is no problem because a polymorphic function can be instantiated with any type.
+Informally we reason that, although the language now contains polymorphism, the type-and-transform system only makes changes to the base types. Thus, type variables will be left alone during transformation. Type instantiations can now also instantiate to the hole type, but this is no problem because a polymorphic function can be instantiated with any type.
 
 \section{Including a Fixpoint}
 Although the simply typed lambda calculus serves well as a foundation for a typed program transformation system, it has one important shortcoming: it is not Turing complete. A language needs some form of unbridled recursion to become Turing complete. A well-known construct for recursion is the fixpoint. A fixpoint works by taking a function and turning it into a possibly infinite self-application. An example of a fixpoint is the Y combinator, but other variants exist as well.
@@ -134,7 +134,7 @@ The fact that the evaluation order impacts the final outcome of an expression al
 
 > const 1 (fix (:1)) `beq` 1
 
-In a lazy semantics this would be a valid equality. In a strict semantics this is unequal: |fix (:1)| has to be evaluated be evaluated before |const| and will thus result in $\bot$ instead of |1|. In general, the convertibility relation is only sound for semantics which use \emph{lazy evaluation}. This also means that the proofs in the type and transform system are only valid for a language with lazy semantics.
+In a lazy semantics this would be a valid equality. In a strict semantics this is unequal: |fix (:1)| has to be evaluated be evaluated before |const| and will thus result in $\bot$ instead of |1|. In general, the convertibility relation is only sound for semantics which use \emph{lazy evaluation}. This also means that the proofs in the type-and-transform system are only valid for a language with lazy semantics.
 
 \paragraph{Totality} Convertibility can be made sound in a strict language by restricting the |fix| function to functions which provably never produce $\bot$: they never loop. A provably finite recursive function is called a \emph{total} function. Agda is an example of a language which allows equational reasoning because, although it has strict semantics, it requires totality on its functions. Note that limitation again removes the turing completeness from a language.
 

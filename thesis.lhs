@@ -74,7 +74,7 @@
 \newtheorem{corollary}{Corollary}
 \newtheorem{law}{Law}
 
-\title{A Type-Changing, Equivalence-Preserving Program Transformation System}
+\title{A Type-Changing, Semantics-Preserving Program Transformation System}
 \date{February 11, 2013}
 \author{Bram Schuur \thanks{Msc. Thesis under supervision of Johan Jeuring and Sean Leather}}
 

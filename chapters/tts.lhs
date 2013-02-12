@@ -43,7 +43,7 @@ Looking at the stream fusion and Hughes' strings examples we see that in both ca
 \subsection{Object Language}
 A TTS can be built for many different programming languages. The language a TTS is designed for is called the object language. However, not every language is suitable as object language. To assure the type soundness transformation property, the object language should have a strong type system. Also, in order to be able to relate the semantics of the source and result of a transformation, the object language should come with an equivalence relation for the semantics of its terms.
 
-One of the most simple languages which is suitable as a TTS object language is the simply typed lambda calculus (stlc). This language will be used to further introduce the core concepts of type and transform systems. Chapter~\ref{chap:extensions} handles TTS systems for object languages with more advanced features.
+One of the most simple languages which is suitable as a TTS object language is the simply typed lambda calculus (stlc). This language will be used to further introduce the core concepts of type-and-transform systems. Chapter~\ref{chap:extensions} handles TTS systems for object languages with more advanced features.
 
 The terms and types of the simply typed lambda calculus are of the following form:
 
@@ -51,7 +51,7 @@ The terms and types of the simply typed lambda calculus are of the following for
 > ty   ::= T | ty -> ty
 > env  ::= empty | env, x : ty
 
-As expressions we have variables, constants, application and abstraction. Types can either be base types or function space. Figure~\ref{fig:stlc} gives the well-known typing rules for the simply typed lambda calculus. The type and transform system for the simply typed lambda calculus is called |(TTS(stlc))|.
+As expressions we have variables, constants, application and abstraction. Types can either be base types or function space. Figure~\ref{fig:stlc} gives the well-known typing rules for the simply typed lambda calculus. The type-and-transform system for the simply typed lambda calculus is called |(TTS(stlc))|.
 
 \begin{figure}[t]
 \begin{align*}
@@ -84,12 +84,12 @@ As expressions we have variables, constants, application and abstraction. Types 
 \label{fig:stlc}
 \end{figure}
 
-The judgement |env `stlc` e : ty| can be seen as a 3-way relation between types, terms and type environments. The elements of this relation consist of the valid stlc type assignments, and membership to this relation is determined by the typing rules. This relation is the starting point for defining a type and transform system for the simply typed lambda calculus.
+The judgement |env `stlc` e : ty| can be seen as a 3-way relation between types, terms and type environments. The elements of this relation consist of the valid stlc type assignments, and membership to this relation is determined by the typing rules. This relation is the starting point for defining a type-and-transform system for the simply typed lambda calculus.
 
 It is not necessary to specify a complete semantics for the simply typed lambda calculus. |(TTS(stlc))| is valid for all semantics which admit $\beta\eta$-convertibility on terms, as will be shown in chapter~\ref{chap:proof}.
 
 \paragraph{The |(TTS(stlc))| relation}
-At the heart of each type and transform system there is a TTS relation. A TTS relation contains the valid transformations between source and result terms, together with the typing information for both these terms. A TTS relation can be systematically derived from the typing relation of the underlying object language. For STLC we derive the following relation:
+At the heart of each type-and-transform system there is a TTS relation. A TTS relation contains the valid transformations between source and result terms, together with the typing information for both these terms. A TTS relation can be systematically derived from the typing relation of the underlying object language. For STLC we derive the following relation:
 
 > envF `stlc` e `rw` e' : tyF
 

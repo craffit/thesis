@@ -1,6 +1,6 @@
 \subsection{Hughes' Strings}
 \label{sec:hughes}
-One example of a type-changing program transformation is known as Hughes' lists ~\cite{hughes86}. In his work, Hughes presents a method which reduces the computational overhead induced by the naive implementation of string concatenation. Hughes' method does not only work for strings, but for lists in general, but we will use strings for simplicity. To see what problem Hughes' strings solve, consider the standard implementation of string concatenation:
+One example of a type-changing program transformation is known as Hughes' lists ~\cite{hughes86}. In his work, Hughes presents a method which reduces the computational overhead induced by the naive implementation of string concatenation. Hughes' method does not only work for strings but for lists in general, but we will use strings for simplicity. To see what problem Hughes' strings solve, consider the standard implementation of string concatenation:
 
 > infixr 5 ++
 > (++) :: String -> String -> String
@@ -17,15 +17,15 @@ The running time of this function is depends on the size of its first argument. 
 
 In the first example |"noot"| is traversed to create |"nootmies"|, and consecutively |"aap"| is traversed to create |"aapnootmies"|. The second example is almost identical, but first |"aapnoot"| is constructed by traversing |"aap"| and then |"aapnootmies"| is constructed after traversing |"aapnoot"|. Thus |"aap"| is traversed twice, a gross inefficiency! To partly counter this problem, |(++)| has been made right-associative, such that the third example produces the most optimal result. However, there are still many cases in which concatenation does not work optimal, as in the fourth example.
 
-The Hughes' lists transformation solves this by treating string not as normal string (|String|) but as functions over strings (|String -> String|). Strings now become continuations of strings, where the continuation represents an unfinished string, for which the tail still has to be filled in. Strings and Hughes' strings can be transformed into each other by the functions |(rep(ss))| and |(abs(ss))|.
+The Hughes' lists transformation solves this by treating string not as normal string (|String|) but as functions over strings (|String -> String|). Strings now become continuations of strings, where the continuation represents an unfinished string, for which the tail still has to be filled in. Strings and Hughes' strings can be transformed into each other by the functions |(rep_(ss))| and |(abs_(ss))|.
 
 > (rep_(ss)) :: String -> (String -> String)
 > (rep_(ss)) ls = (ls ++)
-> 
+>
 > (abs_(ss)) :: (String -> String) -> String
 > (abs_(ss)) c = c ""
 
-The speedup comes from the fact that, instead of normal concatenation, function composition can be used to concatenate two Hughes' strings. 
+The speedup comes from the fact that, instead of normal concatenation, function composition can be used to concatenate two Hughes' strings.
 
 > s1, s2, s3, s4 :: String
 > s1 = (abs_(ss)) $ (rep_(ss)) "aap" `comp` ((rep_(ss)) "noot" `comp` (rep_(ss)) "mies")
@@ -37,7 +37,7 @@ All examples now have the same, optimal running time because the continuation te
 
 \subsection{Stream Fusion}
 \label{sec:fusion}
-Another example of a type-changing program transformation is stream fusion, as found in Coutts et al.~\cite{coutts07, coutts07b}. The goal of stream fusion is the same as Hughes' lists: optimizing operations on lists. Stream fusion does this using a technique called deforestation, which reduces the number of intermediate data structures constructed during evaluation. Consider the following example:
+Another example of a type-changing program transformation is stream fusion, as found in Coutts et al.~\cite{coutts07}. The goal of stream fusion is the same as Hughes' lists: optimizing operations on lists. Stream fusion does this using a technique called deforestation, which reduces the number of intermediate data structures constructed during evaluation. Consider the following example:
 
 > op :: (Int -> Int) -> [Int] -> [Int]
 > op f = map f `comp` filter isEven `comp` map f
@@ -48,7 +48,7 @@ When this example is compiled without optimization, an intermediate result will 
 >     Done
 >  |  Yield a s
 >  |  Skip s
-> 
+>
 > data Stream a = some s. Stream { step :: s -> Step s a, seed :: s }
 
 Streams do not represent lists directly, but store a seed and a function. This function can be used to obtain a new item from the list and a modified seed (|Yield|). When the list is empty the function returns |Done|. |Skip| is returned when only the seed is modified. This becomes more clear when looking at the function which converts a stream into a list:
@@ -116,4 +116,4 @@ Without proper inlining, the rep-abs rule can not fire. In this situation the in
 
 > op' :: (Int -> Int) -> [Int] -> [Int]
 > op' f =  let applyMap = (\x -> mapS f x)
->          in (abs_(fs)) `comp` applyMap `comp` filterS isEven `comp` applyMap `comp` (rep_(fs)) 
+>          in (abs_(fs)) `comp` applyMap `comp` filterS isEven `comp` applyMap `comp` (rep_(fs))
